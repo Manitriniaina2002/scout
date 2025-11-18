@@ -1,0 +1,33 @@
+# Django
+Django>=5.0,<6.0
+djangorestframework>=3.14.0
+
+# Database
+psycopg2-binary>=2.9.9
+dj-database-url>=2.1.0
+
+# Async & Background Tasks
+celery>=5.3.4
+redis>=5.0.1
+django-redis>=5.4.0
+
+# Machine Learning & Data Science
+scikit-learn>=1.3.2
+numpy>=1.26.2
+pandas>=2.1.4
+
+# Monitoring & Data Collection
+paramiko>=3.4.0  # SSH for server monitoring
+requests>=2.31.0
+psutil>=5.9.6  # System monitoring
+
+# Security
+python-dotenv>=1.0.0
+cryptography>=41.0.7
+
+# Production Server
+gunicorn>=21.2.0
+whitenoise>=6.6.0  # Static files serving
+
+# Development
+django-debug-toolbar>=4.2.0
