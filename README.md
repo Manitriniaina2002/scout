@@ -50,11 +50,6 @@ npm run dev
 
 ## ✨ Fonctionnalités
 
-### 📊 Tableau de Bord
-- Statistiques de conformité en temps réel
-- Graphiques interactifs (Chart.js & Recharts)
-- Indicateurs de progression
-- Alertes sur les risques critiques
 
 ### 🎯 Gestion des Contrôles ISO 27001
 - **93 contrôles de l'Annexe A** avec évaluation complète
@@ -71,13 +66,6 @@ npm run dev
   - Timeline de réalisation
   - Notes et observations
   - Preuves de conformité
-
-### 🚨 Gestion des Risques ADES
-- **6 risques critiques** identifiés spécifiquement pour ADES
-- Liaison avec les contrôles ISO 27001
-- Niveaux de sévérité : CRITICAL, HIGH, MEDIUM, LOW
-- Suivi du statut : Ouvert / Résolu
-- Dashboard des risques avec priorités
 
 ### 📜 Historique et Traçabilité
 - Traçabilité complète de toutes les modifications
@@ -138,9 +126,7 @@ audit-ades-iso27001/
 │   │   │   ├── Navigation.jsx
 │   │   │   └── Layout.jsx
 │   │   ├── pages/
-│   │   │   ├── Dashboard.jsx   # Tableau de bord
 │   │   │   ├── Controls.jsx    # Gestion contrôles
-│   │   │   ├── Risks.jsx       # Gestion risques
 │   │   │   └── History.jsx     # Historique
 │   │   ├── services/
 │   │   │   ├── api.js          # Client API Axios
@@ -186,13 +172,7 @@ audit-ades-iso27001/
 | `PUT` | `/api/audit-results/{control_id}` | Mettre à jour |
 | `DELETE` | `/api/audit-results/{control_id}` | Supprimer |
 
-### Risks
 
-| Méthode | Endpoint | Description |
-|---------|----------|-------------|
-| `GET` | `/api/risks` | Liste tous les risques |
-| `GET` | `/api/risks/{risk_id}` | Détails d'un risque |
-| `PUT` | `/api/risks/{risk_id}/status` | Mettre à jour le statut |
 
 ### Statistics & History
 
