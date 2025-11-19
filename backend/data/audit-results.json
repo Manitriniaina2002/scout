@@ -1,0 +1,137 @@
+[
+  {
+    "control": "A.5.1",
+    "status": "compliant",
+    "description": "Politiques de sécurité de l'information documentées et approuvées par la direction",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Politique SMSI validée et signée. Document accessible à tous les employés.",
+    "evidence": "Document_Politique_SMSI_v2.0.pdf"
+  },
+  {
+    "control": "A.5.7",
+    "status": "non-compliant",
+    "description": "Threat intelligence - Informations sur les menaces collectées",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "CRITIQUE: Pas de veille sur les menaces. Risque RISK-003 (Dark Web) non surveillé.",
+    "evidence": ""
+  },
+  {
+    "control": "A.5.9",
+    "status": "partial",
+    "description": "Inventaire des informations et autres actifs",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Inventaire existant mais incomplet. Manque les dispositifs IoT et certains serveurs cloud.",
+    "evidence": "Inventaire_Actifs_2025_Q4.xlsx"
+  },
+  {
+    "control": "A.5.17",
+    "status": "non-compliant",
+    "description": "Informations d'authentification - Gestion des mots de passe",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "CRITIQUE: Pas de MFA activé (RISK-006). Politique de mots de passe faible.",
+    "evidence": ""
+  },
+  {
+    "control": "A.5.23",
+    "status": "partial",
+    "description": "Sécurité de l'information dans l'utilisation de services cloud",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Microsoft 365 utilisé mais score de sécurité faible (RISK-005). Pas d'évaluation formelle du fournisseur cloud.",
+    "evidence": "Capture_M365_Security_Score.png"
+  },
+  {
+    "control": "A.6.3",
+    "status": "partial",
+    "description": "Sensibilisation, éducation et formation à la sécurité",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Formation annuelle dispensée mais pas de suivi sur les emails de phishing (lié à RISK-001).",
+    "evidence": "Formation_SecInfo_2025.pdf"
+  },
+  {
+    "control": "A.6.8",
+    "status": "non-compliant",
+    "description": "Rapports d'événements de sécurité",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Pas de mécanisme formel de reporting. Employés ne savent pas comment signaler les incidents.",
+    "evidence": ""
+  },
+  {
+    "control": "A.7.4",
+    "status": "non-compliant",
+    "description": "Surveillance de la sécurité physique",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "CRITIQUE: Caméras IoT exposées sur Internet (RISK-004). Ports RTSP ouverts sans authentification.",
+    "evidence": "Scan_Shodan_IoT_Devices.pdf"
+  },
+  {
+    "control": "A.8.5",
+    "status": "non-compliant",
+    "description": "Authentification sécurisée",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "CRITIQUE: Pas de MFA (RISK-006). Authentification par mot de passe simple uniquement.",
+    "evidence": ""
+  },
+  {
+    "control": "A.8.8",
+    "status": "partial",
+    "description": "Gestion des vulnérabilités techniques",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "WordPress identifié (RISK-002) mais pas de gestion formelle des vulnérabilités. Pas de scan régulier.",
+    "evidence": "WPScan_Results_Nov2025.txt"
+  },
+  {
+    "control": "A.8.9",
+    "status": "non-compliant",
+    "description": "Gestion de la configuration",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Pas de baseline de configuration. WordPress et plugins non documentés.",
+    "evidence": ""
+  },
+  {
+    "control": "A.8.16",
+    "status": "non-compliant",
+    "description": "Activités de surveillance",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Aucune surveillance active des systèmes. Pas de SIEM ni de logs centralisés.",
+    "evidence": ""
+  },
+  {
+    "control": "A.8.20",
+    "status": "partial",
+    "description": "Sécurité des réseaux",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Firewall présent mais configuration à revoir. Ports IoT exposés (RISK-004).",
+    "evidence": "Audit_Firewall_Config.pdf"
+  },
+  {
+    "control": "A.8.23",
+    "status": "compliant",
+    "description": "Filtrage Web",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "Filtrage web actif avec catégorisation des sites malveillants.",
+    "evidence": "Config_WebFilter.png"
+  },
+  {
+    "control": "A.8.24",
+    "status": "partial",
+    "description": "Utilisation de la cryptographie",
+    "date": "2025-11-19",
+    "auditor": "Équipe Audit ADES",
+    "notes": "HTTPS activé sur le site mais pas de chiffrement systématique des données sensibles.",
+    "evidence": "SSL_Labs_Report.pdf"
+  }
+]

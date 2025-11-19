@@ -1,0 +1,83 @@
+/** @type {import('tailwindcss').Config} */
+export default {
+  darkMode: ["class"],
+  content: [
+    "./index.html",
+    "./src/**/*.{js,ts,jsx,tsx}",
+  ],
+  theme: {
+    extend: {
+      colors: {
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
+        primary: {
+          DEFAULT: "#4B8B32",
+          foreground: "#ffffff",
+          50: "#f0f7ed",
+          100: "#dcecd4",
+          200: "#b9d9a9",
+          300: "#96c67e",
+          400: "#73b353",
+          500: "#4B8B32",
+          600: "#3d7028",
+          700: "#2f541e",
+          800: "#213814",
+          900: "#131c0a",
+        },
+        secondary: {
+          DEFAULT: "#2196F3",
+          foreground: "#ffffff",
+          50: "#e3f2fd",
+          100: "#bbdefb",
+          200: "#90caf9",
+          300: "#64b5f6",
+          400: "#42a5f5",
+          500: "#2196F3",
+          600: "#1e88e5",
+          700: "#1976d2",
+          800: "#1565c0",
+          900: "#0d47a1",
+        },
+        accent: {
+          DEFAULT: "#009688",
+          foreground: "#ffffff",
+          50: "#e0f2f1",
+          100: "#b2dfdb",
+          200: "#80cbc4",
+          300: "#4db6ac",
+          400: "#26a69a",
+          500: "#009688",
+          600: "#00897b",
+          700: "#00796b",
+          800: "#00695c",
+          900: "#004d40",
+        },
+        destructive: {
+          DEFAULT: "#d32f2f",
+          foreground: "#ffffff",
+        },
+        muted: {
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
+        },
+        popover: {
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
+        },
+        card: {
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
+        },
+      },
+      borderRadius: {
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
+      },
+    },
+  },
+  plugins: [],
+}

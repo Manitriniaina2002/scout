@@ -1,0 +1,49 @@
+version: "3.8"
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: audit-ades-backend
+    ports:
+      - "8888:8888"
+    environment:
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ./backend/data:/app/data
+    networks:
+      - audit-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: audit-ades-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - audit-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+networks:
+  audit-network:
+    driver: bridge
+
+volumes:
+  data:

@@ -1,0 +1,132 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Custom animations using brand colors */
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -1000px 0;
+  }
+  100% {
+    background-position: 1000px 0;
+  }
+}
+
+.animate-slideIn {
+  animation: slideIn 0.3s ease-out;
+}
+
+.animate-shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.4s ease-out;
+}
+
+.animate-pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Gradient backgrounds with brand colors */
+.gradient-primary {
+  background: linear-gradient(135deg, #4B8B32 0%, #3d7328 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, #009688 0%, #00796B 100%);
+}
+
+/* Hover effects with brand colors */
+.hover-lift {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.hover-lift:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(75, 139, 50, 0.15);
+}
+
+/* Loading spinner with primary color */
+.spinner {
+  border: 4px solid rgba(75, 139, 50, 0.1);
+  border-top-color: #4B8B32;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Focus rings with brand colors */
+.focus-primary:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: #4B8B32;
+  ring-offset: 2px;
+}
+
+.focus-secondary:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: #2196F3;
+  ring-offset: 2px;
+}
+
+.focus-accent:focus {
+  outline: none;
+  ring: 2px;
+  ring-color: #009688;
+  ring-offset: 2px;
+}
