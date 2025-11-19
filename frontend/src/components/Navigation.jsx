@@ -19,14 +19,7 @@ function Navigation() {
             <Shield className="w-4 h-4" />
             <span>Contrôles ISO 27001</span>
           </NavLink>
-          <NavLink to="/vulnerabilite" className={navLinkClass}>
-            <AlertTriangle className="w-4 h-4" />
-            <span>Vulnérabilités</span>
-          </NavLink>
-          <NavLink to="/risks" className={navLinkClass}>
-            <AlertTriangle className="w-4 h-4" />
-            <span>Risques ADES</span>
-          </NavLink>
+          {/* Vulnerabilités and Risques links removed */}
           <NavLink to="/history" className={navLinkClass}>
             <History className="w-4 h-4" />
             <span>Historique</span>
