@@ -14,7 +14,7 @@ function Header() {
                ADES Solaire Madagascar
               </p>
             </div>
-            <img src={adesLogo} alt="ADES Logo" className="w-20 h-20 object-contain" />
+            <img src={adesLogo} alt="ADES Logo" className="w-18 h-24 object-contain" />
           </div>
         </div>
       </div>
