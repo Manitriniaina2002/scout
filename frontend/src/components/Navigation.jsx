@@ -14,13 +14,14 @@ function Navigation() {
     <nav className="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex space-x-1">
-          <NavLink to="/dashboard" className={navLinkClass}>
-            <TrendingUp className="w-4 h-4" />
-            <span>Vue d&apos;ensemble</span>
-          </NavLink>
+          {/* Dashboard link removed */}
           <NavLink to="/controls" className={navLinkClass}>
             <Shield className="w-4 h-4" />
             <span>Contrôles ISO 27001</span>
+          </NavLink>
+          <NavLink to="/vulnerabilite" className={navLinkClass}>
+            <AlertTriangle className="w-4 h-4" />
+            <span>Vulnérabilités</span>
           </NavLink>
           <NavLink to="/risks" className={navLinkClass}>
             <AlertTriangle className="w-4 h-4" />

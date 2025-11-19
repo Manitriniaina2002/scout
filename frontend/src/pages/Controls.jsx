@@ -1,9 +1,9 @@
 import { useState, useEffect } from 'react'
-import { Search, Edit2, Trash2, Save, X, Plus, Download, Upload, FileUp, Copy, Archive, Eye, CheckCircle2 } from 'lucide-react'
+import { Search, Edit2, Trash2, Save, X, Plus, Download, Upload, FileUp, Filter, Grid3x3, List, CheckCircle, AlertCircle, XCircle, FileText, TrendingUp, Copy, Archive, Eye, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
-import { getAuditResults, deleteAuditResult, createAuditResult, updateAuditResult } from '../services/api'
+import { getAuditResults, deleteAuditResult, createAuditResult, updateAuditResult, getStatistics } from '../services/api'
 import { ISO27001_CONTROLS, getStatusColor, getStatusLabel } from '../data/controls'
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '../components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '../components/ui/card'
 import { Badge } from '../components/ui/badge'
 import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
@@ -11,37 +11,57 @@ import { Label } from '../components/ui/label'
 import { Select } from '../components/ui/select'
 import { Textarea } from '../components/ui/textarea'
 import { Checkbox } from '../components/ui/checkbox'
+import Modal from '../components/ui/modal'
 
 function Controls() {
   const [results, setResults] = useState([])
+  const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [viewMode, setViewMode] = useState('grid') // 'grid' or 'list'
   const [filters, setFilters] = useState({
     category: 'all',
     status: 'all',
     search: ''
   })
   const [editingControlId, setEditingControlId] = useState(null)
+  const [showEditModal, setShowEditModal] = useState(false)
   const [formData, setFormData] = useState({})
   const [selectedControls, setSelectedControls] = useState([])
   const [showAddNew, setShowAddNew] = useState(false)
+  const [showFilters, setShowFilters] = useState(false)
   const [evidenceFile, setEvidenceFile] = useState(null)
 
   useEffect(() => {
-    loadResults()
+    loadData()
   }, [])
 
-  const loadResults = async () => {
+  const loadData = async () => {
     try {
       setLoading(true)
-      const data = await getAuditResults()
-      setResults(data.results || [])
+      const [resultsData, statsData] = await Promise.all([
+        getAuditResults(),
+        getStatistics()
+      ])
+      setResults(resultsData.results || [])
+      setStats(statsData)
       setError(null)
     } catch (err) {
-      setError('Erreur lors du chargement des contrôles')
+      setError('Erreur lors du chargement des données')
       console.error(err)
     } finally {
       setLoading(false)
+    }
+  }
+
+  const loadResults = async () => {
+    try {
+      const data = await getAuditResults()
+      setResults(data.results || [])
+      const statsData = await getStatistics()
+      setStats(statsData)
+    } catch (err) {
+      console.error(err)
     }
   }
 
@@ -51,16 +71,10 @@ function Controls() {
     setFormData({
       controlId: control.id,
       status: result?.status || 'not-evaluated',
-      evaluatedBy: result?.evaluatedBy || '',
-      evaluationDate: result?.evaluationDate || new Date().toISOString().split('T')[0],
       notes: result?.notes || '',
-      evidence: result?.evidence || '',
       priority: result?.priority || 'medium',
-      responsiblePerson: result?.responsiblePerson || '',
-      implementationCost: result?.implementationCost || '',
-      timeline: result?.timeline || ''
     })
-    setEvidenceFile(null)
+    setShowEditModal(true)
   }
 
   const handleAddNew = () => {
@@ -85,6 +99,7 @@ function Controls() {
 
   const handleCancelEdit = () => {
     setEditingControlId(null)
+    setShowEditModal(false)
     setShowAddNew(false)
     setFormData({})
     setEvidenceFile(null)
@@ -284,11 +299,11 @@ function Controls() {
   }
 
   const toggleSelectControl = (controlId) => {
-    setSelectedControls(prev => 
-      prev.includes(controlId) 
+    setSelectedControls(prev => (
+      prev.includes(controlId)
         ? prev.filter(id => id !== controlId)
         : [...prev, controlId]
-    )
+    ));
   }
 
   const toggleSelectAll = () => {
@@ -339,15 +354,34 @@ function Controls() {
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-3xl font-bold tracking-tight text-gray-900">Contrôles ISO 27001:2022</h2>
           <p className="mt-2 text-sm text-gray-600">Annexe A - Gestion et évaluation des contrôles de sécurité</p>
         </div>
         <div className="flex gap-2 animate-fadeIn">
-          <Button onClick={handleAddNew}>
+          <Button 
+            onClick={handleAddNew}
+            className="bg-gradient-to-r from-[#4B8B32] to-green-600 hover:from-green-700 hover:to-green-800 text-white"
+          >
             <Plus className="h-4 w-4 mr-2" />
-            Ajouter
+            Nouveau Contrôle
+          </Button>
+          <Button 
+            onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} 
+            variant="outline"
+            title={viewMode === 'grid' ? 'Vue liste' : 'Vue grille'}
+          >
+            {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3x3 className="h-4 w-4" />}
+          </Button>
+          <Button 
+            onClick={() => setShowFilters(!showFilters)} 
+            variant="outline"
+            className={showFilters ? 'bg-green-50 border-[#4B8B32]' : ''}
+          >
+            <Filter className="h-4 w-4 mr-2" />
+            Filtres
           </Button>
           <Button onClick={handleExport} variant="outline">
             <Download className="h-4 w-4 mr-2" />
@@ -371,11 +405,148 @@ function Controls() {
         </div>
       </div>
 
+      {/* Statistics Section */}
+      {stats && (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 animate-fadeIn">
+          {/* Total Controls */}
+          <Card className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 mb-1">Total des contrôles</p>
+                  <p className="text-3xl font-bold text-gray-900">{stats.total || 0}</p>
+                </div>
+                <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
+                  <FileText className="h-6 w-6 text-gray-600" />
+                </div>
+              </div>
+              <div className="mt-2">
+                <p className="text-xs text-gray-500">ISO 27001:2022 Annexe A</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Compliant */}
+          <Card className="bg-gradient-to-br from-green-50 to-white border-2 border-[#4B8B32] border-opacity-30 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Conformes</p>
+                  <p className="text-3xl font-bold" style={{color: '#4B8B32'}}>{stats.compliant || 0}</p>
+                </div>
+                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{backgroundColor: '#4B8B32', opacity: 0.1}}>
+                  <CheckCircle className="h-6 w-6" style={{color: '#4B8B32'}} />
+                </div>
+              </div>
+              <div className="mt-2">
+                <p className="text-xs text-gray-600">
+                  {stats.total > 0 ? Math.round(stats.compliant / stats.total * 100) : 0}% du total
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Partial */}
+          <Card className="bg-gradient-to-br from-blue-50 to-white border-2 border-[#2196F3] border-opacity-30 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Partiels</p>
+                  <p className="text-3xl font-bold" style={{color: '#2196F3'}}>{stats.partial || 0}</p>
+                </div>
+                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{backgroundColor: '#2196F3', opacity: 0.1}}>
+                  <AlertCircle className="h-6 w-6" style={{color: '#2196F3'}} />
+                </div>
+              </div>
+              <div className="mt-2">
+                <p className="text-xs text-gray-600">
+                  {stats.total > 0 ? Math.round(stats.partial / stats.total * 100) : 0}% du total
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Non-Compliant */}
+          <Card className="bg-gradient-to-br from-red-50 to-white border-2 border-[#d32f2f] border-opacity-30 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Non conformes</p>
+                  <p className="text-3xl font-bold" style={{color: '#d32f2f'}}>{stats.nonCompliant || 0}</p>
+                </div>
+                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{backgroundColor: '#d32f2f', opacity: 0.1}}>
+                  <XCircle className="h-6 w-6" style={{color: '#d32f2f'}} />
+                </div>
+              </div>
+              <div className="mt-2">
+                <p className="text-xs text-gray-600">
+                  {stats.total > 0 ? Math.round(stats.nonCompliant / stats.total * 100) : 0}% du total
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Progress */}
+          <Card className="bg-gradient-to-br from-teal-50 to-white border-2 border-[#009688] border-opacity-30 shadow-sm hover:shadow-md transition-shadow">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 mb-1">Taux de conformité</p>
+                  <p className="text-3xl font-bold" style={{
+                    color: stats.total > 0 
+                      ? (stats.compliant / stats.total * 100) >= 90 ? '#4B8B32'
+                      : (stats.compliant / stats.total * 100) >= 60 ? '#F59E0B'
+                      : '#d32f2f'
+                      : '#9CA3AF'
+                  }}>
+                    {stats.total > 0 ? Math.round(stats.compliant / stats.total * 100) : 0}%
+                  </p>
+                </div>
+                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{
+                  backgroundColor: stats.total > 0 
+                    ? (stats.compliant / stats.total * 100) >= 90 ? '#4B8B32'
+                    : (stats.compliant / stats.total * 100) >= 60 ? '#F59E0B'
+                    : '#d32f2f'
+                    : '#9CA3AF',
+                  opacity: 0.1
+                }}>
+                  <TrendingUp className="h-6 w-6" style={{
+                    color: stats.total > 0 
+                      ? (stats.compliant / stats.total * 100) >= 90 ? '#4B8B32'
+                      : (stats.compliant / stats.total * 100) >= 60 ? '#F59E0B'
+                      : '#d32f2f'
+                      : '#9CA3AF'
+                  }} />
+                </div>
+              </div>
+              <div className="mt-2">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div 
+                    className="h-2 rounded-full transition-all duration-500" 
+                    style={{
+                      width: `${stats.total > 0 ? (stats.compliant / stats.total * 100) : 0}%`,
+                      backgroundColor: stats.total > 0 
+                        ? (stats.compliant / stats.total * 100) >= 90 ? '#4B8B32'
+                        : (stats.compliant / stats.total * 100) >= 60 ? '#F59E0B'
+                        : '#d32f2f'
+                        : '#9CA3AF'
+                    }}
+                  />
+                </div>
+                <p className="text-xs text-gray-600 mt-1">
+                  {stats.total - stats.compliant} restant(s)
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Add New Control Form */}
       {showAddNew && (
-        <Card className="border-2 border-[#4B8B32] shadow-lg animate-slideIn hover-lift">
-          <CardHeader>
-            <CardTitle>Nouveau Contrôle Personnalisé</CardTitle>
+        <Card className="bg-white border-2 border-[#4B8B32] shadow-lg animate-slideIn">
+          <CardHeader className="bg-gradient-to-r from-green-50 to-white">
+            <CardTitle className="text-[#4B8B32]">Nouveau Contrôle Personnalisé</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -573,42 +744,81 @@ function Controls() {
       )}
 
       {/* Filters */}
-      <div className="flex flex-col sm:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-          <Input
-            type="text"
-            placeholder="Rechercher un contrôle..."
-            value={filters.search}
-            onChange={(e) => setFilters({...filters, search: e.target.value})}
-            className="pl-10"
-          />
-        </div>
+      {showFilters && (
+        <Card className="bg-gradient-to-r from-gray-50 to-white border-2 border-gray-200 animate-slideIn">
+          <CardContent className="p-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div>
+                <Label className="text-xs font-medium text-gray-700 mb-2 block">Rechercher</Label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                  <Input
+                    type="text"
+                    placeholder="ID, nom, description..."
+                    value={filters.search}
+                    onChange={(e) => setFilters({...filters, search: e.target.value})}
+                    className="pl-10"
+                  />
+                </div>
+              </div>
 
-        <Select 
-          value={filters.category} 
-          onChange={(e) => setFilters({...filters, category: e.target.value})}
-        >
-          <option value="all">Toutes les catégories</option>
-          {Object.entries(ISO27001_CONTROLS).map(([id, cat]) => (
-            <option key={id} value={id}>{id} - {cat.title}</option>
-          ))}
-        </Select>
+              <div>
+                <Label className="text-xs font-medium text-gray-700 mb-2 block">Catégorie</Label>
+                <Select 
+                  value={filters.category} 
+                  onChange={(e) => setFilters({...filters, category: e.target.value})}
+                  className="w-full"
+                >
+                  <option value="all">Toutes les catégories</option>
+                  {Object.entries(ISO27001_CONTROLS).map(([id, cat]) => (
+                    <option key={id} value={id}>{id} - {cat.title}</option>
+                  ))}
+                </Select>
+              </div>
 
-        <Select 
-          value={filters.status} 
-          onChange={(e) => setFilters({...filters, status: e.target.value})}
-        >
-          <option value="all">Tous les statuts</option>
-          <option value="compliant">Conforme</option>
-          <option value="partial">Partiel</option>
-          <option value="non-compliant">Non conforme</option>
-          <option value="not-evaluated">Non évalué</option>
-        </Select>
-      </div>
+              <div>
+                <Label className="text-xs font-medium text-gray-700 mb-2 block">Statut</Label>
+                <Select 
+                  value={filters.status} 
+                  onChange={(e) => setFilters({...filters, status: e.target.value})}
+                  className="w-full"
+                >
+                  <option value="all">Tous les statuts</option>
+                  <option value="compliant">✓ Conforme</option>
+                  <option value="partial">⚠ Partiel</option>
+                  <option value="non-compliant">✗ Non conforme</option>
+                  <option value="not-evaluated">○ Non évalué</option>
+                </Select>
+              </div>
+            </div>
+            
+            {(filters.search || filters.category !== 'all' || filters.status !== 'all') && (
+              <div className="mt-3 pt-3 border-t border-gray-200 flex items-center justify-between">
+                <p className="text-sm text-gray-600">
+                  Filtres actifs: {[
+                    filters.search && 'recherche',
+                    filters.category !== 'all' && 'catégorie',
+                    filters.status !== 'all' && 'statut'
+                  ].filter(Boolean).join(', ')}
+                </p>
+                <Button 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={() => setFilters({ category: 'all', status: 'all', search: '' })}
+                  className="text-[#4B8B32] hover:bg-green-50"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Réinitialiser
+                </Button>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Controls List */}
       <div className="space-y-6">
+
         {filteredCategories.map(([categoryId, category]) => {
           const categoryControls = category.controls.filter(control => {
             const result = getControlResult(control.id)
@@ -626,12 +836,20 @@ function Controls() {
           return (
             <div key={categoryId} className="space-y-4 animate-fadeIn">
               <div className="border-l-4 pl-4 transition-all duration-300" style={{ borderLeftColor: category.color }}>
-                <h3 className="text-xl font-semibold text-gray-900">
-                  {categoryId} - {category.title}
-                </h3>
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-semibold text-gray-900">
+                    {categoryId} - {category.title}
+                  </h3>
+                  <Badge variant="outline" className="text-xs">
+                    {categoryControls.length} contrôle{categoryControls.length > 1 ? 's' : ''}
+                  </Badge>
+                </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className={viewMode === 'grid' 
+                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3' 
+                : 'space-y-3'
+              }>
                 {categoryControls.map((control, index) => {
                   const result = getControlResult(control.id)
                   const status = result?.status || 'not-evaluated'
@@ -641,36 +859,99 @@ function Controls() {
                   return (
                     <Card 
                       key={control.id}
-                      className="border-l-4 hover:shadow-xl transition-all duration-300 hover-lift animate-fadeIn"
+                      className={`bg-white border-2 border-gray-200 hover:border-[#4B8B32] hover:shadow-xl transition-all duration-300 animate-fadeIn ${
+                        viewMode === 'list' ? 'hover-lift-subtle' : 'hover-lift'
+                      }`}
                       style={{ 
-                        borderLeftColor: statusColor,
                         animationDelay: `${index * 50}ms`
                       }}
                     >
-                      <CardHeader className="pb-3">
-                        <div className="flex items-start gap-2">
-                          <Checkbox
-                            checked={selectedControls.includes(control.id)}
-                            onChange={() => toggleSelectControl(control.id)}
-                            className="mt-1"
-                          />
-                          <div className="flex-1">
-                            <CardTitle className="text-sm font-semibold" style={{color: '#4B8B32'}}>
-                              {control.id}
-                            </CardTitle>
-                            <h5 className="font-medium text-sm text-gray-900 mt-1">{control.name}</h5>
-                            <p className="text-xs text-gray-600 mt-1">{control.description}</p>
+                      <CardHeader className={`bg-gradient-to-r from-green-50/50 to-white ${
+                        viewMode === 'list' ? 'py-2' : 'py-2'
+                      }`}>
+                        <div className="flex items-center gap-2 justify-between">
+                          <div className="flex items-center gap-2 flex-1">
+                            <Checkbox
+                              checked={selectedControls.includes(control.id)}
+                              onChange={() => toggleSelectControl(control.id)}
+                              className="mt-0"
+                            />
+                            <div className="flex-1">
+                              <div className="flex items-center gap-2 mb-0.5">
+                                <CardTitle className="text-xs font-semibold text-[#4B8B32]">
+                                  {control.id}
+                                </CardTitle>
+                                <Badge 
+                                  variant={getStatusBadgeVariant(status)}
+                                  className="text-[10px] px-1.5 py-0"
+                                >
+                                  {getStatusLabel(status)}
+                                </Badge>
+                              </div>
+                              <h5 className="font-medium text-xs text-gray-900">{control.name}</h5>
+                              <p className="text-[10px] text-gray-600 mt-0.5 line-clamp-1">{control.description}</p>
+                            </div>
                           </div>
+                          
+                          {!isEditing && (
+                            <div className="flex gap-0.5">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(control, result)}
+                                className="h-7 w-7 p-0 hover:bg-[#4B8B32] hover:text-white hover:border-[#4B8B32]"
+                                title="Éditer"
+                              >
+                                <Edit2 className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDuplicate(control, result)}
+                                className="h-7 w-7 p-0 hover:bg-[#2196F3] hover:text-white hover:border-[#2196F3]"
+                                title="Dupliquer"
+                              >
+                                <Copy className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleView(control, result)}
+                                className="h-7 w-7 p-0 hover:bg-[#009688] hover:text-white hover:border-[#009688]"
+                                title="Voir"
+                              >
+                                <Eye className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleMarkComplete(control)}
+                                className="h-7 w-7 p-0 text-green-600 border-green-200 hover:bg-green-600 hover:text-white hover:border-green-600"
+                                title="Marquer comme conforme"
+                              >
+                                <CheckCircle2 className="h-3 w-3" />
+                              </Button>
+                              {result && (
+                                <Button
+                                  size="sm"
+                                  variant="destructive"
+                                  onClick={() => handleDelete(control.id)}
+                                  className="h-7 w-7 p-0"
+                                  title="Supprimer"
+                                >
+                                  <Trash2 className="h-3 w-3" />
+                                </Button>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </CardHeader>
-                      <CardContent>
-                        {isEditing ? (
+                      {isEditing && (
+                        <Modal open={showEditModal} onClose={handleCancelEdit}>
                           <div className="space-y-3">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                               <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Statut *
-                                </label>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Statut *</label>
                                 <Select
                                   name="status"
                                   value={formData.status}
@@ -684,9 +965,7 @@ function Controls() {
                                 </Select>
                               </div>
                               <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Priorité
-                                </label>
+                                <label className="block text-xs font-medium text-gray-700 mb-1">Priorité</label>
                                 <Select
                                   name="priority"
                                   value={formData.priority}
@@ -699,115 +978,18 @@ function Controls() {
                                   <option value="critical">Critique</option>
                                 </Select>
                               </div>
-                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Évalué par *
-                                </label>
-                                <input
-                                  type="text"
-                                  name="evaluatedBy"
-                                  value={formData.evaluatedBy}
-                                  onChange={handleFormChange}
-                                  className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4B8B32] focus:border-[#4B8B32]"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Responsable
-                                </label>
-                                <input
-                                  type="text"
-                                  name="responsiblePerson"
-                                  value={formData.responsiblePerson}
-                                  onChange={handleFormChange}
-                                  className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4B8B32] focus:border-[#4B8B32]"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Date *
-                                </label>
-                                <input
-                                  type="date"
-                                  name="evaluationDate"
-                                  value={formData.evaluationDate}
-                                  onChange={handleFormChange}
-                                  className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4B8B32] focus:border-[#4B8B32]"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Coût de mise en œuvre
-                                </label>
-                                <input
-                                  type="text"
-                                  name="implementationCost"
-                                  value={formData.implementationCost}
-                                  onChange={handleFormChange}
-                                  placeholder="Ex: 5000 EUR"
-                                  className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4B8B32] focus:border-[#4B8B32]"
-                                />
-                              </div>
-                              <div>
-                                <label className="block text-xs font-medium text-gray-700 mb-1">
-                                  Délai
-                                </label>
-                                <input
-                                  type="text"
-                                  name="timeline"
-                                  value={formData.timeline}
-                                  onChange={handleFormChange}
-                                  placeholder="Ex: 3 mois"
-                                  className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4B8B32] focus:border-[#4B8B32]"
-                                />
-                              </div>
                             </div>
-                            
                             <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">
-                                Notes
-                              </label>
+                              <label className="block text-xs font-medium text-gray-700 mb-1">Notes</label>
                               <textarea
                                 name="notes"
                                 value={formData.notes}
                                 onChange={handleFormChange}
                                 rows="2"
                                 className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4B8B32] focus:border-[#4B8B32] resize-none"
+                                placeholder="Commentaires ou observations..."
                               ></textarea>
                             </div>
-
-                            <div>
-                              <label className="block text-xs font-medium text-gray-700 mb-1">
-                                Preuves
-                              </label>
-                              <div className="space-y-2">
-                                <input
-                                  type="text"
-                                  name="evidence"
-                                  value={formData.evidence}
-                                  onChange={handleFormChange}
-                                  placeholder="Liens, références..."
-                                  className="w-full px-3 py-2 text-sm bg-gray-100 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-[#4B8B32] focus:border-[#4B8B32]"
-                                />
-                                <div className="flex items-center gap-2">
-                                  <label className="cursor-pointer flex-1">
-                                    <div className="flex items-center justify-center gap-2 px-3 py-2 border-2 border-dashed border-gray-300 rounded-lg hover:border-primary transition-colors">
-                                      <FileUp className="h-4 w-4 text-gray-400" />
-                                      <span className="text-xs text-gray-600">
-                                        {evidenceFile ? evidenceFile.name : 'Télécharger un fichier'}
-                                      </span>
-                                    </div>
-                                    <input type="file" onChange={handleFileChange} className="hidden" />
-                                  </label>
-                                  {evidenceFile && (
-                                    <Button variant="ghost" size="sm" onClick={() => setEvidenceFile(null)}>
-                                      <X className="h-4 w-4" />
-                                    </Button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-
                             <div className="flex justify-end gap-2 pt-2 border-t">
                               <button
                                 onClick={handleCancelEdit}
@@ -825,71 +1007,7 @@ function Controls() {
                               </button>
                             </div>
                           </div>
-                        ) : (
-                          <>
-                            <div className="flex items-center justify-between">
-                              <Badge variant={getStatusBadgeVariant(status)}>
-                                {getStatusLabel(status)}
-                              </Badge>
-                              {result?.evaluatedBy && (
-                                <span className="text-xs text-gray-500">
-                                  Par {result.evaluatedBy} le {new Date(result.evaluationDate).toLocaleDateString('fr-FR')}
-                                </span>
-                              )}
-                            </div>
-                          </>
-                        )}
-                      </CardContent>
-                      {!isEditing && (
-                        <CardFooter className="pt-3 border-t flex-wrap gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEdit(control, result)}
-                            className="flex-1 min-w-[100px]"
-                          >
-                            <Edit2 className="h-3 w-3 mr-1" />
-                            Éditer
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleDuplicate(control, result)}
-                            className="flex-1 min-w-[100px]"
-                          >
-                            <Copy className="h-3 w-3 mr-1" />
-                            Dupliquer
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleView(control, result)}
-                            className="flex-1 min-w-[100px]"
-                          >
-                            <Eye className="h-3 w-3 mr-1" />
-                            Voir
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleMarkComplete(control)}
-                            className="flex-1 min-w-[100px] text-green-600 hover:bg-green-50 hover:text-green-700"
-                          >
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
-                            Conforme
-                          </Button>
-                          {result && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={() => handleDelete(control.id)}
-                              className="flex-1 min-w-[100px]"
-                            >
-                              <Trash2 className="h-3 w-3 mr-1" />
-                              Supprimer
-                            </Button>
-                          )}
-                        </CardFooter>
+                        </Modal>
                       )}
                     </Card>
                   )

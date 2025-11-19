@@ -1,7 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Layout from './components/Layout'
-import Dashboard from './pages/Dashboard'
 import Controls from './pages/Controls'
+import Vulnerabilite from './pages/Vulnerabilite'
 import Risks from './pages/Risks'
 import History from './pages/History'
 import { Toaster } from './components/ui/toaster'
@@ -12,9 +12,9 @@ function App() {
       <Toaster />
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route index element={<Navigate to="/dashboard" replace />} />
-          <Route path="dashboard" element={<Dashboard />} />
+          <Route index element={<Navigate to="/controls" replace />} />
           <Route path="controls" element={<Controls />} />
+          <Route path="vulnerabilite" element={<Vulnerabilite />} />
           <Route path="risks" element={<Risks />} />
           <Route path="history" element={<History />} />
         </Route>
