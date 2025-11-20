@@ -1,7 +1,7 @@
 # Multi-stage Dockerfile for both development and production
 
 # Base stage with common setup
-FROM node:18-alpine AS base
+FROM node:18 AS base
 
 # Set working directory
 WORKDIR /app
