@@ -8,16 +8,10 @@ import Modal from "../components/ui/modal";
 import { toast } from "sonner";
 
 const scanTools = [
-  "Nessus",
-  "OpenVAS",
-  "Qualys",
-  "Rapid7",
-  "Nmap",
-  "Nikto",
-  "Burp Suite",
-  "Acunetix",
-  "ZAP (OWASP)",
-  "NetSparker"
+  "nmap",
+  "nikto",
+  "wpscan",
+  "sslscan"
 ];
 
 // API base URL
