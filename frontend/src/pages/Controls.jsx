@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Search, Edit2, Trash2, Save, X, Plus, Download, Upload, FileUp, Filter, Grid3x3, List, CheckCircle, AlertCircle, XCircle, FileText, TrendingUp, Copy, Archive, Eye, CheckCircle2 } from 'lucide-react'
+import { Search, Edit2, Trash2, Save, X, Plus, Download, Upload, FileUp, Filter, Grid3x3, List, CheckCircle, AlertCircle, XCircle, FileText, TrendingUp, Copy, Eye, CheckCircle2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { getAuditResults, deleteAuditResult, createAuditResult, updateAuditResult, getStatistics } from '../services/api'
 import { ISO27001_CONTROLS, getStatusColor, getStatusLabel } from '../data/controls'
@@ -9,11 +9,13 @@ import { Button } from '../components/ui/button'
 import { Input } from '../components/ui/input'
 import { Label } from '../components/ui/label'
 import { Select } from '../components/ui/select'
-import { Textarea } from '../components/ui/textarea'
 import { Checkbox } from '../components/ui/checkbox'
 import Modal from '../components/ui/modal'
+import { useAuth } from '../contexts/AuthContext'
+import { COLORS, MESSAGES } from '../lib/constants'
 
 function Controls() {
+  const { isAdmin } = useAuth()
   const [results, setResults] = useState([])
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
@@ -341,7 +343,7 @@ function Controls() {
     <div className="flex items-center justify-center min-h-[400px] animate-fadeIn">
       <div className="text-center">
         <div className="spinner inline-block h-12 w-12"></div>
-        <p className="mt-4 text-sm font-medium" style={{color: '#4B8B32'}}>Chargement des contrôles...</p>
+        <p className="mt-4 text-sm font-medium" style={{color: COLORS.primary}}>{MESSAGES.loading.controls}</p>
       </div>
     </div>
   )
@@ -355,51 +357,105 @@ function Controls() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Contrôles ISO 27001:2022</h2>
+      <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
+        <div className="flex-1">
+          <h2 className="text-2xl lg:text-3xl font-bold tracking-tight text-gray-900">Contrôles ISO 27001:2022</h2>
           <p className="mt-2 text-sm text-gray-600">Annexe A - Gestion et évaluation des contrôles de sécurité</p>
+          
+          {/* Search Bar - Always Visible */}
+          <div className="mt-4 max-w-md">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                type="text"
+                placeholder="Rechercher par ID, nom ou description..."
+                value={filters.search}
+                onChange={(e) => setFilters({...filters, search: e.target.value})}
+                className="pl-10 pr-4 py-2 w-full border-gray-300 focus:border-primary focus:ring-primary"
+              />
+              {filters.search && (
+                <button
+                  onClick={() => setFilters({...filters, search: ''})}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+            {filters.search && (
+              <p className="mt-2 text-xs text-gray-500">
+                {(() => {
+                  const totalFiltered = Object.values(ISO27001_CONTROLS).reduce((total, category) => {
+                    return total + category.controls.filter(control => {
+                      const result = getControlResult(control.id)
+                      const matchesSearch = 
+                        control.id.toLowerCase().includes(filters.search.toLowerCase()) ||
+                        control.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+                        control.description.toLowerCase().includes(filters.search.toLowerCase())
+                      const matchesStatus = filters.status === 'all' || 
+                        (result?.status === filters.status) ||
+                        (filters.status === 'not-evaluated' && !result)
+                      const matchesCategory = filters.category === 'all' || control.id.startsWith(filters.category)
+                      return matchesSearch && matchesStatus && matchesCategory
+                    }).length
+                  }, 0)
+                  return `${totalFiltered} contrôle(s) trouvé(s)`
+                })()}
+              </p>
+            )}
+          </div>
         </div>
-        <div className="flex gap-2 animate-fadeIn">
-          <Button 
-            onClick={handleAddNew}
-            className="bg-gradient-to-r from-[#4B8B32] to-green-600 hover:from-green-700 hover:to-green-800 text-white"
-          >
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau Contrôle
-          </Button>
+        
+        {/* Toolbar - Responsive */}
+        <div className="flex flex-wrap gap-2 animate-fadeIn">
+          {isAdmin() && (
+            <Button 
+              onClick={handleAddNew}
+              className={`bg-gradient-to-r ${COLORS.primaryGradient} hover:${COLORS.primaryGradientHover} text-white flex-shrink-0`}
+            >
+              <Plus className="h-4 w-4 mr-2" />
+              <span className="hidden sm:inline">Nouveau Contrôle</span>
+              <span className="sm:hidden">Nouveau</span>
+            </Button>
+          )}
           <Button 
             onClick={() => setViewMode(viewMode === 'grid' ? 'list' : 'grid')} 
             variant="outline"
             title={viewMode === 'grid' ? 'Vue liste' : 'Vue grille'}
+            className="flex-shrink-0"
           >
             {viewMode === 'grid' ? <List className="h-4 w-4" /> : <Grid3x3 className="h-4 w-4" />}
           </Button>
           <Button 
             onClick={() => setShowFilters(!showFilters)} 
             variant="outline"
-            className={showFilters ? 'bg-green-50 border-[#4B8B32]' : ''}
+            className={`flex-shrink-0 ${showFilters ? 'bg-green-50 border-primary' : ''}`}
           >
             <Filter className="h-4 w-4 mr-2" />
-            Filtres
+            <span className="hidden sm:inline">Filtres</span>
           </Button>
-          <Button onClick={handleExport} variant="outline">
-            <Download className="h-4 w-4 mr-2" />
-            Exporter
-          </Button>
-          <label className="cursor-pointer">
-            <Button variant="outline" asChild>
-              <span>
-                <Upload className="h-4 w-4 mr-2" />
-                Importer
-              </span>
-            </Button>
-            <input type="file" accept=".json" onChange={handleImport} className="hidden" />
-          </label>
-          {selectedControls.length > 0 && (
-            <Button onClick={handleBulkDelete} variant="destructive" className="animate-slideIn">
+          {isAdmin() && (
+            <>
+              <Button onClick={handleExport} variant="outline" className="flex-shrink-0">
+                <Download className="h-4 w-4 mr-2" />
+                <span className="hidden sm:inline">Exporter</span>
+              </Button>
+              <label className="cursor-pointer flex-shrink-0">
+                <Button variant="outline" asChild>
+                  <span>
+                    <Upload className="h-4 w-4 mr-2" />
+                    <span className="hidden sm:inline">Importer</span>
+                  </span>
+                </Button>
+                <input type="file" accept=".json" onChange={handleImport} className="hidden" />
+              </label>
+            </>
+          )}
+          {selectedControls.length > 0 && isAdmin() && (
+            <Button onClick={handleBulkDelete} variant="destructive" className="animate-slideIn flex-shrink-0">
               <Trash2 className="h-4 w-4 mr-2" />
-              Supprimer ({selectedControls.length})
+              <span className="hidden sm:inline">Supprimer ({selectedControls.length})</span>
+              <span className="sm:hidden">Del ({selectedControls.length})</span>
             </Button>
           )}
         </div>
@@ -407,17 +463,17 @@ function Controls() {
 
       {/* Statistics Section */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 animate-fadeIn">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4 animate-fadeIn">
           {/* Total Controls */}
-          <Card className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-white to-gray-50 border-2 border-gray-200 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">Total des contrôles</p>
-                  <p className="text-3xl font-bold text-gray-900">{stats.total || 0}</p>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-600 mb-1">Total des contrôles</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-gray-900">{stats.total || 0}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full bg-gray-100 flex items-center justify-center">
-                  <FileText className="h-6 w-6 text-gray-600" />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                  <FileText className="h-5 w-5 sm:h-6 sm:w-6 text-gray-600" />
                 </div>
               </div>
               <div className="mt-2">
@@ -427,15 +483,15 @@ function Controls() {
           </Card>
 
           {/* Compliant */}
-          <Card className="bg-gradient-to-br from-green-50 to-white border-2 border-[#4B8B32] border-opacity-30 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-green-50 to-white border-2 border-primary border-opacity-30 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">Conformes</p>
-                  <p className="text-3xl font-bold" style={{color: '#4B8B32'}}>{stats.compliant || 0}</p>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Conformes</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-primary">{stats.compliant || 0}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{backgroundColor: '#4B8B32', opacity: 0.1}}>
-                  <CheckCircle className="h-6 w-6" style={{color: '#4B8B32'}} />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center bg-primary/10 flex-shrink-0">
+                  <CheckCircle className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
                 </div>
               </div>
               <div className="mt-2">
@@ -447,15 +503,15 @@ function Controls() {
           </Card>
 
           {/* Partial */}
-          <Card className="bg-gradient-to-br from-blue-50 to-white border-2 border-[#2196F3] border-opacity-30 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-yellow-50 to-white border-2 border-yellow-400 border-opacity-30 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">Partiels</p>
-                  <p className="text-3xl font-bold" style={{color: '#2196F3'}}>{stats.partial || 0}</p>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Partiels</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-yellow-600">{stats.partial || 0}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{backgroundColor: '#2196F3', opacity: 0.1}}>
-                  <AlertCircle className="h-6 w-6" style={{color: '#2196F3'}} />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center bg-yellow-100 flex-shrink-0">
+                  <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-600" />
                 </div>
               </div>
               <div className="mt-2">
@@ -467,15 +523,15 @@ function Controls() {
           </Card>
 
           {/* Non-Compliant */}
-          <Card className="bg-gradient-to-br from-red-50 to-white border-2 border-[#d32f2f] border-opacity-30 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-red-50 to-white border-2 border-red-400 border-opacity-30 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">Non conformes</p>
-                  <p className="text-3xl font-bold" style={{color: '#d32f2f'}}>{stats.nonCompliant || 0}</p>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Non conformes</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-red-600">{stats.nonCompliant || 0}</p>
                 </div>
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{backgroundColor: '#d32f2f', opacity: 0.1}}>
-                  <XCircle className="h-6 w-6" style={{color: '#d32f2f'}} />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center bg-red-100 flex-shrink-0">
+                  <XCircle className="h-5 w-5 sm:h-6 sm:w-6 text-red-600" />
                 </div>
               </div>
               <div className="mt-2">
@@ -487,45 +543,26 @@ function Controls() {
           </Card>
 
           {/* Progress */}
-          <Card className="bg-gradient-to-br from-teal-50 to-white border-2 border-[#009688] border-opacity-30 shadow-sm hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
+          <Card className="bg-gradient-to-br from-teal-50 to-white border-2 border-teal-400 border-opacity-30 shadow-sm hover:shadow-md transition-all duration-300 hover:scale-105 active:scale-95 sm:col-span-2 lg:col-span-1">
+            <CardContent className="p-4 sm:p-6">
               <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-700 mb-1">Taux de conformité</p>
-                  <p className="text-3xl font-bold" style={{
-                    color: stats.total > 0 
-                      ? (stats.compliant / stats.total * 100) >= 90 ? '#4B8B32'
-                      : (stats.compliant / stats.total * 100) >= 60 ? '#F59E0B'
-                      : '#d32f2f'
-                      : '#9CA3AF'
-                  }}>
+                <div className="flex-1">
+                  <p className="text-xs sm:text-sm font-medium text-gray-700 mb-1">Taux de conformité</p>
+                  <p className="text-2xl sm:text-3xl font-bold text-teal-600">
                     {stats.total > 0 ? Math.round(stats.compliant / stats.total * 100) : 0}%
                   </p>
                 </div>
-                <div className="h-12 w-12 rounded-full flex items-center justify-center" style={{
-                  backgroundColor: stats.total > 0 
-                    ? (stats.compliant / stats.total * 100) >= 90 ? '#4B8B32'
-                    : (stats.compliant / stats.total * 100) >= 60 ? '#F59E0B'
-                    : '#d32f2f'
-                    : '#9CA3AF',
-                  opacity: 0.1
-                }}>
-                  <TrendingUp className="h-6 w-6" style={{
-                    color: stats.total > 0 
-                      ? (stats.compliant / stats.total * 100) >= 90 ? '#4B8B32'
-                      : (stats.compliant / stats.total * 100) >= 60 ? '#F59E0B'
-                      : '#d32f2f'
-                      : '#9CA3AF'
-                  }} />
+                <div className="h-10 w-10 sm:h-12 sm:w-12 rounded-full flex items-center justify-center bg-teal-100 flex-shrink-0">
+                  <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-teal-600" />
                 </div>
               </div>
-              <div className="mt-2">
+              <div className="mt-3">
                 <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="h-2 rounded-full transition-all duration-500" 
+                  <div
+                    className="h-2 rounded-full transition-all duration-500"
                     style={{
                       width: `${stats.total > 0 ? (stats.compliant / stats.total * 100) : 0}%`,
-                      backgroundColor: stats.total > 0 
+                      backgroundColor: stats.total > 0
                         ? (stats.compliant / stats.total * 100) >= 90 ? '#4B8B32'
                         : (stats.compliant / stats.total * 100) >= 60 ? '#F59E0B'
                         : '#d32f2f'
@@ -550,7 +587,7 @@ function Controls() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <Label htmlFor="controlId">ID du Contrôle *</Label>
                   <Input
@@ -824,7 +861,8 @@ function Controls() {
             const result = getControlResult(control.id)
             const matchesSearch = filters.search === '' || 
               control.id.toLowerCase().includes(filters.search.toLowerCase()) ||
-              control.name.toLowerCase().includes(filters.search.toLowerCase())
+              control.name.toLowerCase().includes(filters.search.toLowerCase()) ||
+              control.description.toLowerCase().includes(filters.search.toLowerCase())
             const matchesStatus = filters.status === 'all' || 
               (result?.status === filters.status) ||
               (filters.status === 'not-evaluated' && !result)
@@ -847,8 +885,8 @@ function Controls() {
               </div>
               
               <div className={viewMode === 'grid' 
-                ? 'grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3' 
-                : 'space-y-3'
+                ? 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2 gap-3 sm:gap-4' 
+                : 'space-y-3 sm:space-y-4'
               }>
                 {categoryControls.map((control, index) => {
                   const result = getControlResult(control.id)
@@ -867,79 +905,79 @@ function Controls() {
                       }}
                     >
                       <CardHeader className={`bg-gradient-to-r from-green-50/50 to-white ${
-                        viewMode === 'list' ? 'py-2' : 'py-2'
+                        viewMode === 'list' ? 'py-3 sm:py-4' : 'py-3 sm:py-4'
                       }`}>
-                        <div className="flex items-center gap-2 justify-between">
-                          <div className="flex items-center gap-2 flex-1">
+                        <div className="flex items-start gap-3 justify-between">
+                          <div className="flex items-start gap-3 flex-1 min-w-0">
                             <Checkbox
                               checked={selectedControls.includes(control.id)}
                               onChange={() => toggleSelectControl(control.id)}
-                              className="mt-0"
+                              className="mt-1 flex-shrink-0"
                             />
-                            <div className="flex-1">
-                              <div className="flex items-center gap-2 mb-0.5">
-                                <CardTitle className="text-xs font-semibold text-[#4B8B32]">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-1">
+                                <CardTitle className="text-xs font-semibold text-[#4B8B32] truncate">
                                   {control.id}
                                 </CardTitle>
                                 <Badge 
                                   variant={getStatusBadgeVariant(status)}
-                                  className="text-[10px] px-1.5 py-0"
+                                  className="text-[10px] px-2 py-0.5 self-start"
                                 >
                                   {getStatusLabel(status)}
                                 </Badge>
                               </div>
-                              <h5 className="font-medium text-xs text-gray-900">{control.name}</h5>
-                              <p className="text-[10px] text-gray-600 mt-0.5 line-clamp-1">{control.description}</p>
+                              <h5 className="font-medium text-sm sm:text-base text-gray-900 mb-1 line-clamp-2">{control.name}</h5>
+                              <p className="text-xs sm:text-sm text-gray-600 line-clamp-2">{control.description}</p>
                             </div>
                           </div>
                           
-                          {!isEditing && (
-                            <div className="flex gap-0.5">
+                          {!isEditing && isAdmin() && (
+                            <div className="flex flex-wrap gap-1 sm:gap-2 flex-shrink-0">
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleEdit(control, result)}
-                                className="h-7 w-7 p-0 hover:bg-[#4B8B32] hover:text-white hover:border-[#4B8B32]"
+                                className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-[#4B8B32] hover:text-white hover:border-[#4B8B32] touch-manipulation"
                                 title="Éditer"
                               >
-                                <Edit2 className="h-3 w-3" />
+                                <Edit2 className="h-3 w-3 sm:h-3 sm:w-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleDuplicate(control, result)}
-                                className="h-7 w-7 p-0 hover:bg-[#2196F3] hover:text-white hover:border-[#2196F3]"
+                                className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-[#2196F3] hover:text-white hover:border-[#2196F3] touch-manipulation"
                                 title="Dupliquer"
                               >
-                                <Copy className="h-3 w-3" />
+                                <Copy className="h-3 w-3 sm:h-3 sm:w-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleView(control, result)}
-                                className="h-7 w-7 p-0 hover:bg-[#009688] hover:text-white hover:border-[#009688]"
+                                className="h-8 w-8 sm:h-7 sm:w-7 p-0 hover:bg-[#009688] hover:text-white hover:border-[#009688] touch-manipulation"
                                 title="Voir"
                               >
-                                <Eye className="h-3 w-3" />
+                                <Eye className="h-3 w-3 sm:h-3 sm:w-3" />
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleMarkComplete(control)}
-                                className="h-7 w-7 p-0 text-green-600 border-green-200 hover:bg-green-600 hover:text-white hover:border-green-600"
+                                className="h-8 w-8 sm:h-7 sm:w-7 p-0 text-green-600 border-green-200 hover:bg-green-600 hover:text-white hover:border-green-600 touch-manipulation"
                                 title="Marquer comme conforme"
                               >
-                                <CheckCircle2 className="h-3 w-3" />
+                                <CheckCircle2 className="h-3 w-3 sm:h-3 sm:w-3" />
                               </Button>
                               {result && (
                                 <Button
                                   size="sm"
                                   variant="destructive"
                                   onClick={() => handleDelete(control.id)}
-                                  className="h-7 w-7 p-0"
+                                  className="h-8 w-8 sm:h-7 sm:w-7 p-0 touch-manipulation"
                                   title="Supprimer"
                                 >
-                                  <Trash2 className="h-3 w-3" />
+                                  <Trash2 className="h-3 w-3 sm:h-3 sm:w-3" />
                                 </Button>
                               )}
                             </div>

@@ -10,6 +10,20 @@ const api = axios.create({
   timeout: 10000,
 })
 
+// Add request interceptor to include auth token
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token')
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`
+    }
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
@@ -89,4 +103,47 @@ export const checkHealth = async () => {
   return response.data
 }
 
+// Authentication
+export const login = async (credentials) => {
+  const response = await api.post('/api/auth/login', credentials)
+  return response.data
+}
+
+export const getProfile = async () => {
+  const response = await api.get('/api/auth/me')
+  return response.data
+}
+
+export const updateProfile = async (data) => {
+  const response = await api.put('/api/auth/me', data)
+  return response.data
+}
+
+export const changePassword = async (data) => {
+  const response = await api.put('/api/auth/me/password', data)
+  return response.data
+}
+
+// User Management (Admin only)
+export const getUsers = async () => {
+  const response = await api.get('/api/auth/users')
+  return response.data
+}
+
+export const createUser = async (data) => {
+  const response = await api.post('/api/auth/users', data)
+  return response.data
+}
+
+export const updateUser = async (userId, data) => {
+  const response = await api.put(`/api/auth/users/${userId}`, data)
+  return response.data
+}
+
+export const deleteUser = async (userId) => {
+  const response = await api.delete(`/api/auth/users/${userId}`)
+  return response.data
+}
+
+export { api }
 export default api

@@ -40,12 +40,73 @@ body {
   }
 }
 
-@keyframes pulse {
-  0%, 100% {
+@keyframes slideDown {
+  from {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
     opacity: 1;
   }
-  50% {
-    opacity: 0.8;
+}
+
+@keyframes scaleIn {
+  from {
+    transform: scale(0.95);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Mobile-specific utilities */
+.animate-slideDown {
+  animation: slideDown 0.3s ease-out;
+}
+
+.animate-scaleIn {
+  animation: scaleIn 0.2s ease-out;
+}
+
+/* Touch-friendly interactions */
+.touch-manipulation {
+  touch-action: manipulation;
+}
+
+/* Better mobile scrolling */
+@media (max-width: 640px) {
+  body {
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Improve button tap targets */
+  button {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Better text readability on mobile */
+  p, span, div {
+    line-height: 1.5;
+  }
+  
+  /* Ensure mobile menu button is clickable */
+  .mobile-menu-button {
+    position: relative;
+    z-index: 60;
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+  
+  /* Prevent text selection on mobile menu button */
+  .mobile-menu-button * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
   }
 }
 

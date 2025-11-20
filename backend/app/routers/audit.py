@@ -2,8 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from typing import List
 from app.database import get_db
-from app.models import AuditResult, AuditHistory
-from app.schemas import AuditResultCreate, AuditResultUpdate, AuditResultResponse
+from app.models import AuditResult, AuditHistory, User
+from app.schemas import AuditResultCreate, AuditResultUpdate, AuditResultResponse, StatisticsResponse
+from app.routers.auth import get_current_admin
 
 router = APIRouter()
 
@@ -51,7 +52,7 @@ def get_audit_result(control_id: str, db: Session = Depends(get_db)):
 
 
 @router.post("/audit-results", response_model=AuditResultResponse, status_code=201)
-def create_audit_result(audit: AuditResultCreate, db: Session = Depends(get_db)):
+def create_audit_result(audit: AuditResultCreate, current_user: User = Depends(get_current_admin), db: Session = Depends(get_db)):
     """Crée un nouveau résultat d'audit"""
     # Check if already exists
     existing = db.query(AuditResult).filter(AuditResult.control_id == audit.controlId).first()
@@ -89,7 +90,7 @@ def create_audit_result(audit: AuditResultCreate, db: Session = Depends(get_db))
 
 
 @router.put("/audit-results/{control_id}", response_model=AuditResultResponse)
-def update_audit_result(control_id: str, audit: AuditResultUpdate, db: Session = Depends(get_db)):
+def update_audit_result(control_id: str, audit: AuditResultUpdate, current_user: User = Depends(get_current_admin), db: Session = Depends(get_db)):
     """Met à jour un résultat d'audit"""
     db_audit = db.query(AuditResult).filter(AuditResult.control_id == control_id).first()
     if not db_audit:
@@ -126,7 +127,7 @@ def update_audit_result(control_id: str, audit: AuditResultUpdate, db: Session =
 
 
 @router.delete("/audit-results/{control_id}")
-def delete_audit_result(control_id: str, db: Session = Depends(get_db)):
+def delete_audit_result(control_id: str, current_user: User = Depends(get_current_admin), db: Session = Depends(get_db)):
     """Supprime un résultat d'audit"""
     db_audit = db.query(AuditResult).filter(AuditResult.control_id == control_id).first()
     if not db_audit:
@@ -146,3 +147,65 @@ def delete_audit_result(control_id: str, db: Session = Depends(get_db)):
     db.commit()
     
     return {"message": "Résultat supprimé avec succès"}
+
+
+@router.get("/statistics", response_model=StatisticsResponse)
+def get_statistics(db: Session = Depends(get_db)):
+    """Récupère les statistiques globales des contrôles"""
+    results = db.query(AuditResult).all()
+    
+    total = len(results)
+    compliant = len([r for r in results if r.status == "compliant"])
+    partial = len([r for r in results if r.status == "partial"])
+    non_compliant = len([r for r in results if r.status == "non-compliant"])
+    not_evaluated = len([r for r in results if r.status == "not-evaluated" or not r.status])
+    
+    # Calculate compliance score (compliant + partial/2) / total * 100
+    compliance_score = 0.0
+    if total > 0:
+        score = compliant + (partial * 0.5)
+        compliance_score = round((score / total) * 100, 1)
+    
+    # Group by category
+    categories = {}
+    for result in results:
+        cat = result.category
+        if cat not in categories:
+            categories[cat] = {"total": 0, "compliant": 0, "partial": 0, "nonCompliant": 0, "notEvaluated": 0}
+        categories[cat]["total"] += 1
+        
+        if result.status == "compliant":
+            categories[cat]["compliant"] += 1
+        elif result.status == "partial":
+            categories[cat]["partial"] += 1
+        elif result.status == "non-compliant":
+            categories[cat]["nonCompliant"] += 1
+        else:
+            categories[cat]["notEvaluated"] += 1
+    
+    by_category = []
+    for cat_name, cat_stats in categories.items():
+        cat_total = cat_stats["total"]
+        cat_score = 0.0
+        if cat_total > 0:
+            cat_score = round((cat_stats["compliant"] + cat_stats["partial"] * 0.5) / cat_total * 100, 1)
+        
+        by_category.append({
+            "category": cat_name,
+            "total": cat_total,
+            "compliant": cat_stats["compliant"],
+            "partial": cat_stats["partial"],
+            "nonCompliant": cat_stats["nonCompliant"],
+            "notEvaluated": cat_stats["notEvaluated"],
+            "complianceScore": cat_score
+        })
+    
+    return {
+        "total": total,
+        "compliant": compliant,
+        "partial": partial,
+        "nonCompliant": non_compliant,
+        "notEvaluated": not_evaluated,
+        "complianceScore": compliance_score,
+        "byCategory": by_category
+    }

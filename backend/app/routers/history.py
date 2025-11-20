@@ -2,14 +2,15 @@ from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
-from app.models import AuditHistory
+from app.models import AuditHistory, User
 from app.schemas import HistoryResponse
+from app.routers.auth import get_current_admin
 
 router = APIRouter()
 
 
 @router.get("/history", response_model=dict)
-def get_history(limit: int = 50, db: Session = Depends(get_db)):
+def get_history(limit: int = 50, current_user: User = Depends(get_current_admin), db: Session = Depends(get_db)):
     """Récupère l'historique des modifications récentes"""
     history = db.query(AuditHistory).order_by(AuditHistory.timestamp.desc()).limit(limit).all()
     

@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   backend:
     build:
@@ -41,9 +39,10 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      target: development
     container_name: sms-audit-frontend-dev
     ports:
-      - "3000:80"
+      - "3000:3000"
     environment:
       - NODE_ENV=development
     volumes:
@@ -55,7 +54,7 @@ services:
       - sms-audit-network
     restart: unless-stopped
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:80"]
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
       interval: 30s
       timeout: 10s
       retries: 3

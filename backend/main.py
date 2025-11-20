@@ -1,29 +1,32 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import audit, risks, statistics, history, vulnerabilities
+from app.routers import audit, history, auth
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
-    title="Audit ADES - ISO 27001 API",
-    version="2.0.0",
-    description="API REST pour l'application d'audit ISO 27001 - ADES",
+    title="SMSI - Audit ADES API",
+    version="3.0.0",
+    description="API REST pour l'application d'audit SMSI - ADES",
 )
 
 # Configure CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "http://localhost:3000",
+        "http://localhost:3000",  # Development frontend
         "http://localhost:3001",
         "http://127.0.0.1:3000",
         "http://127.0.0.1:3001",
-        "http://localhost:5173",
+        "http://localhost:5173",  # Vite dev server
         "http://127.0.0.1:5173",
         "http://localhost:5174",
-        "http://127.0.0.1:5174"
+        "http://127.0.0.1:5174",
+        "http://localhost:80",    # Production frontend (nginx)
+        "http://127.0.0.1:80",
+        "*",  # Allow all origins for development (restrict in production)
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -31,18 +34,16 @@ app.add_middleware(
 )
 
 # Include routers
+app.include_router(auth.router, prefix="/api/auth", tags=["authentication"])
 app.include_router(audit.router, prefix="/api", tags=["audit"])
-app.include_router(risks.router, prefix="/api", tags=["risks"])
-app.include_router(statistics.router, prefix="/api", tags=["statistics"])
 app.include_router(history.router, prefix="/api", tags=["history"])
-app.include_router(vulnerabilities.router, prefix="/api", tags=["vulnerabilities"])
 
 
 @app.get("/")
 def root():
     return {
-        "name": "Audit ADES - ISO 27001 API",
-        "version": "2.0.0",
+        "name": "SMSI - Audit ADES API",
+        "version": "3.0.0",
         "database": "SQLite with SQLAlchemy",
         "framework": "FastAPI",
         "endpoints": {

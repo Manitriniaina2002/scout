@@ -222,21 +222,22 @@ function Vulnerabilite() {
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <h2 className="text-3xl font-bold tracking-tight text-gray-900">Vulnérabilités</h2>
+              <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Vulnérabilités</h2>
               <p className="mt-2 text-sm text-gray-600">Tableau de bord des vulnérabilités et scan de sécurité</p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
               <Button 
                 onClick={() => setShowHistoryModal(true)} 
                 variant="outline"
-                className="border-[#4B8B32] text-[#4B8B32] hover:bg-[#4B8B32] hover:text-white"
+                className="border-[#4B8B32] text-[#4B8B32] hover:bg-[#4B8B32] hover:text-white w-full sm:w-auto"
               >
                 <Activity className="w-4 h-4 mr-2" />
-                Voir l&apos;historique
+                <span className="hidden sm:inline">Voir l&apos;historique</span>
+                <span className="sm:hidden">Historique</span>
               </Button>
-              <Button onClick={() => setShowScanModal(true)} className="bg-[#4B8B32] text-white hover:bg-green-700">
+              <Button onClick={() => setShowScanModal(true)} className="bg-[#4B8B32] text-white hover:bg-green-700 w-full sm:w-auto">
                 <Scan className="w-4 h-4 mr-2" />
                 Nouveau Scan
               </Button>

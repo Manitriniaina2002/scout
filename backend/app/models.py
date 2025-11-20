@@ -11,6 +11,19 @@ class StatusEnum(str, enum.Enum):
     not_evaluated = "not-evaluated"
 
 
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    username = Column(String, unique=True, index=True, nullable=False)
+    email = Column(String, unique=True, index=True, nullable=False)
+    hashed_password = Column(String, nullable=False)
+    role = Column(String, nullable=False, default="user")  # admin, user
+    is_active = Column(Integer, default=1)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
 class AuditResult(Base):
     __tablename__ = "audit_results"
 
@@ -28,21 +41,6 @@ class AuditResult(Base):
     updated_at = Column(DateTime(timezone=True), onupdate=func.now())
 
 
-class ADESRisk(Base):
-    __tablename__ = "ades_risks"
-
-    id = Column(Integer, primary_key=True, index=True)
-    risk_id = Column(String, unique=True, index=True, nullable=False)
-    title = Column(String, nullable=False)
-    description = Column(Text)
-    severity = Column(String, nullable=False)  # CRITICAL, HIGH, MEDIUM, LOW
-    status = Column(String, nullable=False, default="open")  # open, resolved
-    linked_controls = Column(String)  # Comma-separated list
-    source = Column(String)  # ADES, ANSSI, ISO27001, etc.
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-
 class AuditHistory(Base):
     __tablename__ = "audit_history"
 
@@ -54,28 +52,3 @@ class AuditHistory(Base):
     user = Column(String, nullable=False)
     notes = Column(Text)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
-
-
-class Vulnerability(Base):
-    __tablename__ = "vulnerabilities"
-
-    id = Column(String, primary_key=True, index=True)  # VULN-001, VULN-002, etc.
-    name = Column(String, nullable=False)
-    description = Column(Text)
-    criticality = Column(String, nullable=False)  # critical, high, medium, base
-    status = Column(String, nullable=False, default="active")  # active, resolved
-    cvss_score = Column(String, nullable=False)  # CVSS score as string
-    created_at = Column(DateTime(timezone=True), server_default=func.now())
-    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
-
-
-class ScanHistory(Base):
-    __tablename__ = "scan_history"
-
-    id = Column(String, primary_key=True, index=True)  # SCAN-001, SCAN-002, etc.
-    tool = Column(String, nullable=False)
-    ip_address = Column(String, nullable=False)
-    network = Column(String, nullable=False)
-    status = Column(String, nullable=False, default="running")  # running, completed, failed
-    vulnerabilities_found = Column(Integer, default=0)
-    scan_date = Column(DateTime(timezone=True), server_default=func.now())

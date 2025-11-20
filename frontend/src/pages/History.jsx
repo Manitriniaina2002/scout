@@ -55,10 +55,10 @@ function History() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center space-x-3">
-        <Clock className="w-8 h-8 text-primary" />
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+        <Clock className="w-8 h-8 text-primary flex-shrink-0" />
         <div>
-          <h2 className="text-3xl font-bold tracking-tight text-gray-900">Historique des modifications</h2>
+          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">Historique des modifications</h2>
           <p className="mt-2 text-sm text-gray-600">Traçabilité complète des actions et modifications</p>
         </div>
       </div>

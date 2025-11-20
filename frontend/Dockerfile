@@ -1,5 +1,7 @@
-# Build stage
-FROM node:18-alpine AS builder
+# Multi-stage Dockerfile for both development and production
+
+# Base stage with common setup
+FROM node:18-alpine AS base
 
 # Set working directory
 WORKDIR /app
@@ -13,14 +15,35 @@ RUN npm ci
 # Copy source code
 COPY . .
 
-# Set production API URL (will be overridden by environment variable)
+# Development stage
+FROM base AS development
+
+# Set development environment
+ENV NODE_ENV=development
 ENV VITE_API_URL=http://localhost:8888
+
+# Expose development port
+EXPOSE 3000
+
+# Health check for development
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD wget --quiet --tries=1 --spider http://localhost:3000 || exit 1
+
+# Start development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]
+
+# Production build stage
+FROM base AS builder
+
+# Set production API URL (will be overridden by build arg)
+ARG VITE_API_URL=/api
+ENV VITE_API_URL=$VITE_API_URL
 
 # Build the application
 RUN npm run build
 
 # Production stage
-FROM nginx:alpine
+FROM nginx:alpine AS production
 
 # Copy custom nginx config
 COPY nginx.conf /etc/nginx/conf.d/default.conf
@@ -31,7 +54,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 # Expose port 80
 EXPOSE 80
 
-# Health check
+# Health check for production
 HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
     CMD wget --quiet --tries=1 --spider http://localhost:80 || exit 1
 

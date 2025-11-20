@@ -3,6 +3,46 @@ from typing import Optional, List
 from datetime import datetime
 
 
+class UserBase(BaseModel):
+    username: str
+    email: str
+    role: str = "user"
+
+
+class UserCreate(UserBase):
+    password: str
+
+
+class UserUpdate(BaseModel):
+    username: str
+    email: str
+    password: Optional[str] = None
+    role: str = "user"
+
+
+class UserResponse(UserBase):
+    id: int
+    is_active: bool
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class Token(BaseModel):
+    access_token: str
+    token_type: str
+
+
+class TokenData(BaseModel):
+    username: Optional[str] = None
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
 class AuditResultBase(BaseModel):
     controlId: str
     controlName: str
@@ -28,25 +68,6 @@ class AuditResultResponse(AuditResultBase):
         from_attributes = True
 
 
-class RiskBase(BaseModel):
-    id: str
-    title: str
-    description: Optional[str] = None
-    severity: str
-    status: str
-    linkedControls: Optional[List[str]] = []
-    source: Optional[str] = None
-
-
-class RiskResponse(RiskBase):
-    class Config:
-        from_attributes = True
-
-
-class RiskStatusUpdate(BaseModel):
-    status: str
-
-
 class HistoryResponse(BaseModel):
     controlId: str
     action: str
@@ -68,46 +89,3 @@ class StatisticsResponse(BaseModel):
     notEvaluated: int
     complianceScore: float
     byCategory: List[dict]
-
-
-class VulnerabilityBase(BaseModel):
-    id: str
-    name: str
-    description: Optional[str] = None
-    criticality: str
-    status: str
-    cvssScore: str
-
-
-class VulnerabilityResponse(VulnerabilityBase):
-    class Config:
-        from_attributes = True
-
-
-class ScanHistoryBase(BaseModel):
-    id: str
-    tool: str
-    ipAddress: str
-    network: str
-    status: str
-    vulnerabilitiesFound: int
-    scanDate: datetime
-
-
-class ScanHistoryCreate(BaseModel):
-    tool: str
-    ipAddress: str
-    network: str
-
-
-class ScanHistoryResponse(ScanHistoryBase):
-    class Config:
-        from_attributes = True
-
-
-class VulnerabilityStatistics(BaseModel):
-    total: int
-    critical: int
-    high: int
-    medium: int
-    base: int
