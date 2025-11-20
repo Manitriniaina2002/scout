@@ -68,3 +68,46 @@ class StatisticsResponse(BaseModel):
     notEvaluated: int
     complianceScore: float
     byCategory: List[dict]
+
+
+class VulnerabilityBase(BaseModel):
+    id: str
+    name: str
+    description: Optional[str] = None
+    criticality: str
+    status: str
+    cvssScore: str
+
+
+class VulnerabilityResponse(VulnerabilityBase):
+    class Config:
+        from_attributes = True
+
+
+class ScanHistoryBase(BaseModel):
+    id: str
+    tool: str
+    ipAddress: str
+    network: str
+    status: str
+    vulnerabilitiesFound: int
+    scanDate: datetime
+
+
+class ScanHistoryCreate(BaseModel):
+    tool: str
+    ipAddress: str
+    network: str
+
+
+class ScanHistoryResponse(ScanHistoryBase):
+    class Config:
+        from_attributes = True
+
+
+class VulnerabilityStatistics(BaseModel):
+    total: int
+    critical: int
+    high: int
+    medium: int
+    base: int

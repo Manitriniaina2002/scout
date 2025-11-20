@@ -54,3 +54,28 @@ class AuditHistory(Base):
     user = Column(String, nullable=False)
     notes = Column(Text)
     timestamp = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class Vulnerability(Base):
+    __tablename__ = "vulnerabilities"
+
+    id = Column(String, primary_key=True, index=True)  # VULN-001, VULN-002, etc.
+    name = Column(String, nullable=False)
+    description = Column(Text)
+    criticality = Column(String, nullable=False)  # critical, high, medium, base
+    status = Column(String, nullable=False, default="active")  # active, resolved
+    cvss_score = Column(String, nullable=False)  # CVSS score as string
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    updated_at = Column(DateTime(timezone=True), onupdate=func.now())
+
+
+class ScanHistory(Base):
+    __tablename__ = "scan_history"
+
+    id = Column(String, primary_key=True, index=True)  # SCAN-001, SCAN-002, etc.
+    tool = Column(String, nullable=False)
+    ip_address = Column(String, nullable=False)
+    network = Column(String, nullable=False)
+    status = Column(String, nullable=False, default="running")  # running, completed, failed
+    vulnerabilities_found = Column(Integer, default=0)
+    scan_date = Column(DateTime(timezone=True), server_default=func.now())

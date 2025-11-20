@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import engine, Base
-from app.routers import audit, risks, statistics, history
+from app.routers import audit, risks, statistics, history, vulnerabilities
 
 # Create database tables
 Base.metadata.create_all(bind=engine)
@@ -35,6 +35,7 @@ app.include_router(audit.router, prefix="/api", tags=["audit"])
 app.include_router(risks.router, prefix="/api", tags=["risks"])
 app.include_router(statistics.router, prefix="/api", tags=["statistics"])
 app.include_router(history.router, prefix="/api", tags=["history"])
+app.include_router(vulnerabilities.router, prefix="/api", tags=["vulnerabilities"])
 
 
 @app.get("/")
@@ -56,6 +57,11 @@ def root():
             "PUT /api/risks/{risk_id}/status": "Mettre à jour le statut d'un risque",
             "GET /api/history": "Historique des modifications",
             "GET /api/history/{control_id}": "Historique d'un contrôle",
+            "GET /api/vulnerabilities": "Liste toutes les vulnérabilités",
+            "GET /api/vulnerabilities/statistics": "Statistiques des vulnérabilités",
+            "GET /api/scan-history": "Historique des scans",
+            "POST /api/scan-history": "Créer un nouveau scan",
+            "PUT /api/scan-history/{scan_id}/status": "Mettre à jour le statut d'un scan",
             "GET /api/health": "État de santé de l'API",
         },
     }

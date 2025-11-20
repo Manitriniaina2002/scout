@@ -15,15 +15,18 @@ function Navigation() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex space-x-1">
           {/* Dashboard link removed */}
-          <NavLink to="/controls" className={navLinkClass}>
-            <Shield className="w-4 h-4" />
-            <span>Contrôles ISO 27001</span>
-          </NavLink>
-          {/* Vulnerabilités and Risques links removed */}
-          <NavLink to="/history" className={navLinkClass}>
-            <History className="w-4 h-4" />
-            <span>Historique</span>
-          </NavLink>
+            <NavLink to="/controls" className={navLinkClass}>
+              <Shield className="w-4 h-4" />
+              <span>Contrôles ISO 27001</span>
+            </NavLink>
+            <NavLink to="/vulnerabilite" className={navLinkClass}>
+              <AlertTriangle className="w-4 h-4" />
+              <span>Vulnérabilités</span>
+            </NavLink>
+            <NavLink to="/history" className={navLinkClass}>
+              <History className="w-4 h-4" />
+              <span>Historique</span>
+            </NavLink>
         </div>
       </div>
     </nav>

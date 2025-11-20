@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { Clock } from 'lucide-react'
 import { getHistory } from '../services/api'
-import { Card, CardContent } from '../components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table'
+import { Badge } from '../components/ui/badge'
 
 function History() {
   const [history, setHistory] = useState([])
@@ -60,43 +62,73 @@ function History() {
           <p className="mt-2 text-sm text-gray-600">Traçabilité complète des actions et modifications</p>
         </div>
       </div>
-      
-      <div className="relative">
-        {/* Timeline line */}
-        <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200"></div>
-        
-        <div className="space-y-4">
-          {history.map((entry, index) => (
-            <div key={index} className="relative pl-12">
-              {/* Timeline dot */}
-              <div className="absolute left-2.5 top-3 w-3 h-3 rounded-full bg-primary ring-4 ring-white"></div>
-              
-              <Card className="hover:shadow-md transition-shadow">
-                <CardContent className="p-4">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-2">
-                    <h3 className="font-semibold text-primary">{entry.controlId}</h3>
-                    <span className="text-xs text-gray-500">{formatDate(entry.timestamp)}</span>
-                  </div>
-                  <p className="text-sm text-gray-900 mb-1">
-                    <strong className="font-medium">{entry.action}</strong>
-                    {entry.oldStatus && entry.newStatus && (
-                      <span className="text-gray-600">
-                        {' '}: <span className="text-red-600">{entry.oldStatus}</span> → <span className="text-green-600">{entry.newStatus}</span>
-                      </span>
-                    )}
-                  </p>
-                  {entry.notes && (
-                    <p className="text-sm text-gray-600 italic mt-2 pl-4 border-l-2 border-gray-200">
-                      {entry.notes}
-                    </p>
-                  )}
-                  <p className="text-xs text-gray-500 mt-2">Par {entry.user}</p>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
-      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Historique détaillé</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Date</TableHead>
+                  <TableHead>Contrôle</TableHead>
+                  <TableHead>Action</TableHead>
+                  <TableHead>Statut</TableHead>
+                  <TableHead>Utilisateur</TableHead>
+                  <TableHead>Notes</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {history.map((entry, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">
+                      {formatDate(entry.timestamp)}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{entry.controlId}</Badge>
+                    </TableCell>
+                    <TableCell>{entry.action}</TableCell>
+                    <TableCell>
+                      {entry.oldStatus && entry.newStatus ? (
+                        <div className="flex items-center gap-2">
+                          <Badge variant="destructive" className="text-xs">
+                            {entry.oldStatus}
+                          </Badge>
+                          <span className="text-gray-400">→</span>
+                          <Badge variant="default" className="text-xs bg-green-100 text-green-800">
+                            {entry.newStatus}
+                          </Badge>
+                        </div>
+                      ) : (
+                        <Badge variant="secondary">N/A</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {entry.user}
+                    </TableCell>
+                    <TableCell className="max-w-xs">
+                      {entry.notes ? (
+                        <p className="text-sm text-gray-600 truncate" title={entry.notes}>
+                          {entry.notes}
+                        </p>
+                      ) : (
+                        <span className="text-gray-400 text-sm">Aucune note</span>
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            {history.length === 0 && (
+              <p className="text-sm text-gray-500 text-center py-8">
+                Aucun historique disponible
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

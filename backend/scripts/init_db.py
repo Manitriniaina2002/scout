@@ -10,7 +10,7 @@ import json
 sys.path.append(os.path.dirname(os.path.dirname(__file__)))
 
 from app.database import SessionLocal, engine, Base
-from app.models import AuditResult, ADESRisk, AuditHistory
+from app.models import AuditResult, ADESRisk, AuditHistory, Vulnerability, ScanHistory
 
 def init_db():
     """Créer toutes les tables de la base de données"""
@@ -23,6 +23,8 @@ def init_db():
         print("  - audit_results")
         print("  - ades_risks")
         print("  - audit_history")
+        print("  - vulnerabilities")
+        print("  - scan_history")
     except Exception as e:
         print(f"✗ Erreur lors de l'initialisation: {e}")
         sys.exit(1)
@@ -168,9 +170,172 @@ def load_risks():
     finally:
         db.close()
 
+def load_vulnerabilities():
+    """Charger les vulnérabilités de test"""
+    db = SessionLocal()
+    
+    vulnerabilities_data = [
+        {
+            "id": "VULN-001",
+            "name": "Injection SQL",
+            "description": "Failles d'injection dans les formulaires",
+            "criticality": "critical",
+            "status": "active",
+            "cvss_score": "9.8"
+        },
+        {
+            "id": "VULN-002",
+            "name": "XSS",
+            "description": "Cross-site scripting",
+            "criticality": "high",
+            "status": "active",
+            "cvss_score": "7.4"
+        },
+        {
+            "id": "VULN-003",
+            "name": "Configuration faible",
+            "description": "Paramètres de sécurité insuffisants",
+            "criticality": "medium",
+            "status": "active",
+            "cvss_score": "5.3"
+        },
+        {
+            "id": "VULN-004",
+            "name": "Port ouvert non sécurisé",
+            "description": "Service exposé sans protection",
+            "criticality": "base",
+            "status": "active",
+            "cvss_score": "3.1"
+        },
+        {
+            "id": "VULN-005",
+            "name": "Injection NoSQL",
+            "description": "Failles d'injection dans les bases NoSQL",
+            "criticality": "critical",
+            "status": "active",
+            "cvss_score": "9.1"
+        },
+        {
+            "id": "VULN-006",
+            "name": "CSRF",
+            "description": "Cross-Site Request Forgery",
+            "criticality": "high",
+            "status": "active",
+            "cvss_score": "8.8"
+        },
+        {
+            "id": "VULN-007",
+            "name": "Session fixation",
+            "description": "Problème de gestion de session",
+            "criticality": "medium",
+            "status": "active",
+            "cvss_score": "6.5"
+        },
+        {
+            "id": "VULN-008",
+            "name": "Information disclosure",
+            "description": "Divulgation d'informations sensibles",
+            "criticality": "base",
+            "status": "active",
+            "cvss_score": "2.7"
+        }
+    ]
+    
+    try:
+        added = 0
+        skipped = 0
+        
+        for vuln_data in vulnerabilities_data:
+            existing = db.query(Vulnerability).filter(
+                Vulnerability.id == vuln_data["id"]
+            ).first()
+            
+            if existing:
+                skipped += 1
+                continue
+            
+            vulnerability = Vulnerability(**vuln_data)
+            db.add(vulnerability)
+            added += 1
+        
+        db.commit()
+        print(f"✓ Vulnérabilités: {added} ajoutées, {skipped} ignorées")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"✗ Erreur: {e}")
+    finally:
+        db.close()
+
+def load_scan_history():
+    """Charger l'historique des scans de test"""
+    db = SessionLocal()
+    
+    scan_history_data = [
+        {
+            "id": "SCAN-001",
+            "tool": "Nessus",
+            "ip_address": "192.168.1.1",
+            "network": "192.168.1.0/24",
+            "status": "completed",
+            "vulnerabilities_found": 3
+        },
+        {
+            "id": "SCAN-002",
+            "tool": "OpenVAS",
+            "ip_address": "10.0.0.1",
+            "network": "10.0.0.0/24",
+            "status": "completed",
+            "vulnerabilities_found": 7
+        },
+        {
+            "id": "SCAN-003",
+            "tool": "Nmap",
+            "ip_address": "172.16.0.1",
+            "network": "172.16.0.0/24",
+            "status": "failed",
+            "vulnerabilities_found": 0
+        }
+    ]
+    
+    try:
+        added = 0
+        skipped = 0
+        
+        for scan_data in scan_history_data:
+            existing = db.query(ScanHistory).filter(
+                ScanHistory.id == scan_data["id"]
+            ).first()
+            
+            if existing:
+                skipped += 1
+                continue
+            
+            # Set scan date to some time in the past
+            from datetime import datetime, timedelta
+            import random
+            days_ago = random.randint(1, 30)
+            scan_date = datetime.now() - timedelta(days=days_ago)
+            
+            scan = ScanHistory(**scan_data)
+            scan.scan_date = scan_date
+            db.add(scan)
+            added += 1
+        
+        db.commit()
+        print(f"✓ Historique des scans: {added} ajoutés, {skipped} ignorés")
+        
+    except Exception as e:
+        db.rollback()
+        print(f"✗ Erreur: {e}")
+    finally:
+        db.close()
+
 if __name__ == "__main__":
     init_db()
     load_audit_results()
     load_risks()
+    load_vulnerabilities()
+    load_scan_history()
     print("-" * 50)
     print("✓ Base de données initialisée avec succès\n")
