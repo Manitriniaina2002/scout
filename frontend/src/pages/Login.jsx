@@ -19,11 +19,16 @@ const ADESLogin = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-custom min-h-screen bg-gray-100 flex items-center justify-center relative overflow-hidden">
+    <div className="white-bg-green-animation min-h-screen flex items-center justify-center relative overflow-hidden">
+      <div className="green-wave"></div>
+      <div className="green-wave-2"></div>
+      <div className="yellow-wave"></div>
+      <div className="yellow-circle-1"></div>
+      <div className="yellow-circle-2"></div>
       <motion.div
-        initial={{ opacity: 0, scale: 0.8 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 3, ease: "easeInOut" }}
+        initial={{ opacity: 0, scale: 0.8, y: 50 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
         className="w-[800px] h-[400px] bg-white backdrop-blur-md border border-transparent rounded-lg shadow-lg relative z-10 flex"
       >
         <button
