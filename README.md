@@ -1,8 +1,8 @@
-# Audit ADES - ISO 27001:2022 & Vulnerability Scanner
+# Audit ADES - ISO 27001:2022 Controls Management System
 
-Application moderne d'audit de conformité ISO 27001:2022 et de scan de vulnérabilités pour ADES Solaire Madagascar.
+Application moderne de gestion des contrôles de conformité ISO 27001:2022 pour ADES Solaire Madagascar avec système d'authentification complet.
 
-![Version](https://img.shields.io/badge/version-2.1.0-blue)
+![Version](https://img.shields.io/badge/version-2.2.0-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-green)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -49,18 +49,17 @@ npm run dev
 
 ## ✨ Fonctionnalités
 
-### 🔍 Scan de Vulnérabilités
+### 🔐 Système d'Authentification
 
-- **Outils intégrés** : Nmap, Nikto, WPScan, SSLScan
-- **Scans automatisés** en arrière-plan
-- **Rapports détaillés** avec sévérité (Critical, High, Medium, Low)
-- **Historique des scans** avec traçabilité
-- **Support multi-protocoles** : TCP, HTTP, HTTPS, SSL/TLS
-- **Analyse de services** : Détection des ports ouverts et vulnérabilités connues
+- **Authentification JWT** avec tokens sécurisés
+- **Gestion des utilisateurs** : CRUD complet des comptes utilisateur
+- **Rôles et permissions** : Système de rôles pour contrôle d'accès
+- **Connexion sécurisée** avec validation côté client et serveur
+- **Gestion de profil** : Modification du mot de passe et informations personnelles
+- **Interface de connexion animée** avec design responsive moderne
 
 ### 🎯 Gestion des Contrôles ISO 27001
 
-- **93 contrôles de l'Annexe A** avec évaluation complète
 - **93 contrôles de l'Annexe A** avec évaluation complète
 - **CRUD complet** : Créer, Lire, Modifier, Supprimer
 - **Édition en ligne** avec formulaires shadcn/ui
@@ -83,13 +82,23 @@ npm run dev
 - Attribution des actions aux utilisateurs
 - Historique par contrôle ou global
 
+### 📊 Statistiques et Rapports
+
+- **Tableaux de bord** avec métriques en temps réel
+- **Graphiques interactifs** (Chart.js, Recharts)
+- **Statistiques par catégorie** et priorité
+- **Rapports d'avancement** de conformité
+- **Métriques de progression** globale
+
 ### 🎨 Interface Moderne
 
 - **shadcn/ui** - Composants UI professionnels
 - **Tailwind CSS** - Design responsive et moderne
 - **Toast Notifications** - Feedback utilisateur élégant (Sonner)
 - **Couleurs de marque** : Vert (#4B8B32), Bleu (#2196F3), Teal (#009688)
-- **Animations fluides** - Transitions et effets visuels
+- **Animations fluides** - Transitions et effets visuels (Framer Motion)
+- **Design responsive** - Optimisé pour mobile et desktop
+- **Navigation mobile** avec menu hamburger
 - **Mode sombre compatible** (prêt pour implémentation)
 
 ## 🛠️ Stack Technique
@@ -107,6 +116,7 @@ npm run dev
 | **Lucide React** | 0.554.0 | Icônes |
 | **Chart.js** | 4.4.0 | Graphiques |
 | **Recharts** | 3.4.1 | Graphiques React |
+| **Framer Motion** | 12.23.24 | Animations et transitions |
 | **Axios** | 1.6.2 | Client HTTP |
 
 ### Backend
@@ -127,23 +137,31 @@ npm run dev
 
 ## 📁 Structure du Projet
 
-```
-audit-ades-iso27001/
+```bash
+scout/
 ├── frontend/                    # Application React + Vite
 │   ├── src/
 │   │   ├── components/
 │   │   │   ├── ui/             # shadcn/ui components
 │   │   │   ├── Header.jsx
 │   │   │   ├── Navigation.jsx
+│   │   │   ├── LoginForm.jsx
 │   │   │   └── Layout.jsx
 │   │   ├── pages/
+│   │   │   ├── Login.jsx       # Page de connexion
 │   │   │   ├── Controls.jsx    # Gestion contrôles
-│   │   │   └── History.jsx     # Historique
+│   │   │   ├── Profile.jsx     # Profil utilisateur
+│   │   │   ├── UserManagement.jsx # Gestion utilisateurs
+│   │   │   ├── History.jsx     # Historique
+│   │   │   └── Risks.jsx       # Gestion des risques
 │   │   ├── services/
-│   │   │   ├── api.js          # Client API Axios
-│   │   │   └── localStorage.js # Fallback local
-│   │   └── data/
-│   │       └── controls.js     # Référentiel ISO 27001
+│   │   │   └── api.js          # Client API Axios
+│   │   ├── contexts/
+│   │   │   └── AuthContext.jsx # Contexte d'authentification
+│   │   ├── data/
+│   │   │   └── controls.js     # Référentiel ISO 27001
+│   │   └── lib/
+│   │       └── utils.js        # Utilitaires
 │   ├── Dockerfile              # Container frontend
 │   ├── nginx.conf              # Config Nginx
 │   └── package.json
@@ -151,10 +169,11 @@ audit-ades-iso27001/
 ├── backend/                     # API FastAPI
 │   ├── app/
 │   │   ├── routers/
-│   │   │   ├── audit.py        # Routes audit
+│   │   │   ├── auth.py         # Routes authentification
 │   │   │   ├── risks.py        # Routes risques
-│   │   │   ├── statistics.py  # Routes stats
-│   │   │   └── history.py      # Routes historique
+│   │   │   ├── statistics.py   # Routes statistiques
+│   │   │   ├── history.py      # Routes historique
+│   │   │   └── audit.py        # Routes audit
 │   │   ├── models.py           # Modèles SQLAlchemy
 │   │   ├── schemas.py          # Schémas Pydantic
 │   │   └── database.py         # Config DB
@@ -167,45 +186,66 @@ audit-ades-iso27001/
 │   └── requirements.txt
 │
 ├── docker-compose.yml           # Dev setup
+├── docker-compose.override.yml  # Dev overrides
 ├── docker-compose.prod.yml      # Prod setup
-└── README.md
+├── README.md                    # Documentation
+└── DEPLOYMENT.md                # Guide déploiement
 ```
 
 ## 🔌 API Endpoints
 
-### Scan de Vulnérabilités
+### 🔐 Authentification
 
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
-| `GET` | `/api/vulnerabilities` | Liste toutes les vulnérabilités |
-| `GET` | `/api/vulnerabilities/statistics` | Statistiques des vulnérabilités |
-| `GET` | `/api/scan-history` | Historique des scans |
-| `POST` | `/api/scan-history` | Lancer un nouveau scan |
-| `GET` | `/api/scan-history/{scan_id}` | Détails d'un scan |
-| `GET` | `/api/tools/availability` | Disponibilité des outils de scan |
+| `POST` | `/api/auth/login` | Connexion utilisateur |
+| `POST` | `/api/auth/logout` | Déconnexion utilisateur |
+| `GET` | `/api/auth/me` | Informations utilisateur actuel |
+| `PUT` | `/api/auth/profile` | Mettre à jour le profil |
+| `PUT` | `/api/auth/change-password` | Changer le mot de passe |
 
-### Audit Results
+### 👥 Gestion des Utilisateurs (Admin)
 
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
-| `GET` | `/api/audit-results` | Liste tous les résultats |
-| `GET` | `/api/audit-results/{control_id}` | Détails d'un résultat |
-| `POST` | `/api/audit-results` | Créer un résultat |
-| `PUT` | `/api/audit-results/{control_id}` | Mettre à jour |
-| `DELETE` | `/api/audit-results/{control_id}` | Supprimer |
+| `GET` | `/api/users` | Liste tous les utilisateurs |
+| `GET` | `/api/users/{user_id}` | Détails d'un utilisateur |
+| `POST` | `/api/users` | Créer un nouvel utilisateur |
+| `PUT` | `/api/users/{user_id}` | Mettre à jour un utilisateur |
+| `DELETE` | `/api/users/{user_id}` | Supprimer un utilisateur |
 
+### 🎯 Contrôles ISO 27001
 
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| `GET` | `/api/controls` | Liste tous les contrôles |
+| `GET` | `/api/controls/{control_id}` | Détails d'un contrôle |
+| `POST` | `/api/controls` | Créer un contrôle |
+| `PUT` | `/api/controls/{control_id}` | Mettre à jour un contrôle |
+| `DELETE` | `/api/controls/{control_id}` | Supprimer un contrôle |
+| `POST` | `/api/controls/bulk-delete` | Suppression en masse |
 
-### Statistics & History
+### 📊 Statistiques
 
 | Méthode | Endpoint | Description |
 |---------|----------|-------------|
 | `GET` | `/api/statistics` | Statistiques globales |
+| `GET` | `/api/statistics/dashboard` | Données du tableau de bord |
+
+### 📜 Historique
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
 | `GET` | `/api/history` | Historique complet |
 | `GET` | `/api/history/{control_id}` | Historique d'un contrôle |
+
+### 🏥 Monitoring
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
 | `GET` | `/api/health` | Health check |
 
-**Documentation Interactive** : http://localhost:8888/docs
+**Documentation Interactive** : <http://localhost:8888/docs>
 
 ## 🐳 Docker
 
@@ -239,11 +279,13 @@ docker-compose up -d --build
 ### Variables d'Environnement
 
 **Development** (`frontend/.env`):
+
 ```env
 VITE_API_URL=http://localhost:8888
 ```
 
 **Production** (`frontend/.env.production`):
+
 ```env
 VITE_API_URL=/api
 ```
@@ -279,9 +321,9 @@ cp backend/data/audit.db ./backup-$(date +%Y%m%d).db
 
 ### Tables
 
-- `audit_results` - Évaluations des contrôles ISO 27001
-- `ades_risks` - Risques spécifiques ADES
-- `audit_history` - Historique des modifications
+- `users` - Comptes utilisateurs et authentification
+- `controls` - Contrôles ISO 27001 et évaluations
+- `history` - Historique des modifications et traçabilité
 
 ## 🚀 Build de Production
 
@@ -333,6 +375,6 @@ Ce projet est développé pour ADES Solaire Madagascar.
 
 ---
 
-**Version** : 2.1.0  
+**Version** : 2.2.0  
 **Dernière mise à jour** : Novembre 2025  
-**Statut** : ✅ Production Ready
+**Statut** : ✅ Production Ready avec Authentification

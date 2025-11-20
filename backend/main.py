@@ -58,11 +58,6 @@ def root():
             "PUT /api/risks/{risk_id}/status": "Mettre à jour le statut d'un risque",
             "GET /api/history": "Historique des modifications",
             "GET /api/history/{control_id}": "Historique d'un contrôle",
-            "GET /api/vulnerabilities": "Liste toutes les vulnérabilités",
-            "GET /api/vulnerabilities/statistics": "Statistiques des vulnérabilités",
-            "GET /api/scan-history": "Historique des scans",
-            "POST /api/scan-history": "Créer un nouveau scan",
-            "PUT /api/scan-history/{scan_id}/status": "Mettre à jour le statut d'un scan",
             "GET /api/health": "État de santé de l'API",
         },
     }
