@@ -1,8 +1,8 @@
-# Audit ADES - ISO 27001:2022
+# Audit ADES - ISO 27001:2022 & Vulnerability Scanner
 
-Application moderne d'audit de conformité ISO 27001:2022 pour ADES Solaire Madagascar.
+Application moderne d'audit de conformité ISO 27001:2022 et de scan de vulnérabilités pour ADES Solaire Madagascar.
 
-![Version](https://img.shields.io/badge/version-2.0.0-blue)
+![Version](https://img.shields.io/badge/version-2.1.0-blue)
 ![Docker](https://img.shields.io/badge/docker-ready-green)
 ![License](https://img.shields.io/badge/license-MIT-blue)
 
@@ -43,15 +43,24 @@ npm run dev
 
 ## 📚 Documentation
 
-- **[Docker Quick Start](./DOCKER-QUICKSTART.md)** - Guide de démarrage rapide avec Docker
 - **[Guide Docker Complet](./README.Docker.md)** - Documentation Docker détaillée
 - **[Guide de Déploiement](./DEPLOYMENT.md)** - Résumé complet du déploiement
 - **[Mapping des Risques](./RISK-MAPPING.md)** - Analyse des risques ADES
 
 ## ✨ Fonctionnalités
 
+### 🔍 Scan de Vulnérabilités
+
+- **Outils intégrés** : Nmap, Nikto, WPScan, SSLScan
+- **Scans automatisés** en arrière-plan
+- **Rapports détaillés** avec sévérité (Critical, High, Medium, Low)
+- **Historique des scans** avec traçabilité
+- **Support multi-protocoles** : TCP, HTTP, HTTPS, SSL/TLS
+- **Analyse de services** : Détection des ports ouverts et vulnérabilités connues
 
 ### 🎯 Gestion des Contrôles ISO 27001
+
+- **93 contrôles de l'Annexe A** avec évaluation complète
 - **93 contrôles de l'Annexe A** avec évaluation complète
 - **CRUD complet** : Créer, Lire, Modifier, Supprimer
 - **Édition en ligne** avec formulaires shadcn/ui
@@ -63,17 +72,19 @@ npm run dev
   - Priorité (Faible, Moyenne, Haute, Critique)
   - Responsable de mise en œuvre
   - Coût d'implémentation
-  - Timeline de réalisation
+- **Timeline de réalisation**
   - Notes et observations
   - Preuves de conformité
 
 ### 📜 Historique et Traçabilité
+
 - Traçabilité complète de toutes les modifications
 - Timeline des changements
 - Attribution des actions aux utilisateurs
 - Historique par contrôle ou global
 
 ### 🎨 Interface Moderne
+
 - **shadcn/ui** - Composants UI professionnels
 - **Tailwind CSS** - Design responsive et moderne
 - **Toast Notifications** - Feedback utilisateur élégant (Sonner)
@@ -161,6 +172,17 @@ audit-ades-iso27001/
 ```
 
 ## 🔌 API Endpoints
+
+### Scan de Vulnérabilités
+
+| Méthode | Endpoint | Description |
+|---------|----------|-------------|
+| `GET` | `/api/vulnerabilities` | Liste toutes les vulnérabilités |
+| `GET` | `/api/vulnerabilities/statistics` | Statistiques des vulnérabilités |
+| `GET` | `/api/scan-history` | Historique des scans |
+| `POST` | `/api/scan-history` | Lancer un nouveau scan |
+| `GET` | `/api/scan-history/{scan_id}` | Détails d'un scan |
+| `GET` | `/api/tools/availability` | Disponibilité des outils de scan |
 
 ### Audit Results
 
@@ -311,6 +333,6 @@ Ce projet est développé pour ADES Solaire Madagascar.
 
 ---
 
-**Version** : 2.0.0  
+**Version** : 2.1.0  
 **Dernière mise à jour** : Novembre 2025  
 **Statut** : ✅ Production Ready

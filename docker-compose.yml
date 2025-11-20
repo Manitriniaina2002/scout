@@ -5,15 +5,18 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: audit-ades-backend
+    container_name: sms-audit-backend-dev
     ports:
       - "8888:8888"
     environment:
       - PYTHONUNBUFFERED=1
+      - ENV=development
+      - DATABASE_URL=sqlite:///./data/audit.db
     volumes:
-      - ./backend/data:/app/data
+      - ./backend:/app
+      - /app/__pycache__
     networks:
-      - audit-network
+      - sms-audit-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8888/api/health"]
@@ -21,18 +24,35 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    command:
+      [
+        "python",
+        "-m",
+        "uvicorn",
+        "main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8888",
+        "--reload",
+      ]
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: audit-ades-frontend
+    container_name: sms-audit-frontend-dev
     ports:
       - "3000:80"
+    environment:
+      - NODE_ENV=development
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     depends_on:
       - backend
     networks:
-      - audit-network
+      - sms-audit-network
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:80"]
@@ -40,10 +60,8 @@ services:
       timeout: 10s
       retries: 3
       start_period: 40s
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
 
 networks:
-  audit-network:
+  sms-audit-network:
     driver: bridge
-
-volumes:
-  data:

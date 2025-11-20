@@ -1,0 +1,32 @@
+version: "3.8"
+
+# Override file for local development
+# This file is automatically merged with docker-compose.yml when running docker-compose
+
+services:
+  backend:
+    environment:
+      - ENV=development
+      - DEBUG=true
+    volumes:
+      - ./backend:/app
+    command:
+      [
+        "python",
+        "-m",
+        "uvicorn",
+        "main:app",
+        "--host",
+        "0.0.0.0",
+        "--port",
+        "8888",
+        "--reload",
+      ]
+
+  frontend:
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+    environment:
+      - CHOKIDAR_USEPOLLING=true

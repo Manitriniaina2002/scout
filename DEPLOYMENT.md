@@ -1,52 +1,367 @@
-# Deployment Summary - Audit ADES ISO 27001
+# 🚀 SMSI Deployment Guide
 
-## ✅ Application Ready for Deployment
+## Overview
 
-### What's Been Configured
+This guide covers deploying the SMSI (Système de Management de la Sécurité de l'Information) application using Docker Compose for both development and production environments.
 
-1. **✅ SQLite Database**
-   - Location: `backend/data/audit.db`
-   - Tables: `audit_results`, `ades_risks`, `audit_history`
-   - Initialized with 15 audit results and 6 ADES risks
-   - Initialization script: `backend/scripts/init_db.py`
+## 📋 Prerequisites
 
-2. **✅ Backend API (FastAPI)**
-   - Port: 8888
-   - Health endpoint: `/api/health`
-   - API Documentation: `/docs`
-   - CORS configured for development and production
-   - Full REST API for audit results, risks, and history
+- **Docker Desktop** (Windows/Mac) or Docker Engine (Linux)
+- **Docker Compose** V2.0+
+- **Git** (for cloning the repository)
+- **At least 4GB RAM** available for containers
 
-3. **✅ Frontend (React + Vite)**
-   - Port: 3000 (development) / 80 (production)
-   - shadcn/ui components integrated
-   - Toast notifications with Sonner
-   - Tailwind CSS styling
-   - Brand colors: #4B8B32 (green), #2196F3 (blue), #009688 (teal)
+## 🏗️ Project Structure
 
-4. **✅ Docker Configuration**
-   - `docker-compose.yml` - Development setup
-   - `docker-compose.prod.yml` - Production setup
-   - Backend Dockerfile with health checks
-   - Frontend Dockerfile with Nginx
-   - Docker ignore files configured
-   - Start/stop scripts for Windows and Linux
+```
+sms-audit/
+├── backend/                 # FastAPI backend
+│   ├── Dockerfile          # Backend container config
+│   ├── requirements.txt    # Python dependencies
+│   └── data/               # SQLite database (created at runtime)
+├── frontend/               # React frontend
+│   ├── Dockerfile          # Frontend container config
+│   ├── nginx.conf          # Nginx configuration
+│   └── src/                # React application
+├── docker-compose.yml      # Development configuration
+├── docker-compose.prod.yml # Production configuration
+├── docker-compose.override.yml # Dev overrides
+├── .env.prod               # Production environment template
+├── deploy.sh               # Linux/Mac deployment script
+├── deploy.bat              # Windows deployment script
+└── .dockerignore          # Docker build exclusions
+```
 
----
+## 🚀 Quick Start
 
-## 🚀 Deployment Options
+### Development Deployment
 
-### Option 1: Docker Compose (Recommended)
-
-**Start:**
 ```bash
+# Linux/Mac
+./deploy.sh dev
+
+# Windows
+deploy.bat dev
+```
+
+**Access URLs:**
+- Frontend: http://localhost:3000
+- Backend API: http://localhost:8888
+- API Documentation: http://localhost:8888/docs
+
+### Production Deployment
+
+1. **Configure environment:**
+   ```bash
+   cp .env.prod .env
+   # Edit .env with your production values
+   ```
+
+2. **Deploy:**
+   ```bash
+   # Linux/Mac
+   ./deploy.sh prod
+
+   # Windows
+   deploy.bat prod
+   ```
+
+**Access URLs:**
+- Application: http://localhost
+- Backend API: http://localhost:8888
+- API Documentation: http://localhost:8888/docs
+
+## ⚙️ Configuration
+
+### Environment Variables
+
+Copy `.env.prod` to `.env` and configure:
+
+```bash
+# Application
+APP_NAME=SMSI - Évaluation de conformité
+APP_ENV=production
+APP_DEBUG=false
+
+# Backend
+BACKEND_PORT=8888
+DATABASE_URL=sqlite:///./data/audit.db
+
+# Frontend
+FRONTEND_PORT=80
+VITE_API_URL=/api
+
+# Security
+SECRET_KEY=your-secret-key-here-change-in-production
+CORS_ORIGINS=["http://localhost:80", "https://yourdomain.com"]
+
+# Logging
+LOG_LEVEL=INFO
+LOG_FILE=/app/logs/app.log
+```
+
+### Docker Compose Files
+
+- **`docker-compose.yml`**: Base development configuration
+- **`docker-compose.override.yml`**: Development overrides (hot reload)
+- **`docker-compose.prod.yml`**: Production configuration
+
+## 🛠️ Deployment Scripts
+
+### Linux/Mac (`deploy.sh`)
+
+```bash
+# Development
+./deploy.sh dev
+
+# Production
+./deploy.sh prod
+
+# Management
+./deploy.sh stop      # Stop all services
+./deploy.sh logs      # View logs
+./deploy.sh status    # Show service status
+./deploy.sh cleanup   # Remove containers and volumes
+```
+
+### Windows (`deploy.bat`)
+
+```cmd
+REM Development
+deploy.bat dev
+
+REM Production
+deploy.bat prod
+
+REM Management
+deploy.bat stop
+deploy.bat logs
+deploy.bat status
+deploy.bat cleanup
+```
+
+## 🔧 Manual Docker Commands
+
+### Development
+
+```bash
+# Start services
+docker-compose up -d
+
+# View logs
+docker-compose logs -f
+
+# Stop services
+docker-compose down
+
+# Rebuild and restart
+docker-compose up -d --build
+```
+
+### Production
+
+```bash
+# Start services
+docker-compose -f docker-compose.prod.yml up -d
+
+# View logs
+docker-compose -f docker-compose.prod.yml logs -f
+
+# Stop services
+docker-compose -f docker-compose.prod.yml down
+
+# Rebuild and restart
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+## 📊 Monitoring & Health Checks
+
+### Health Endpoints
+
+- **Backend**: `http://localhost:8888/api/health`
+- **Frontend**: `http://localhost/health` (serves 200 OK)
+
+### View Logs
+
+```bash
+# All services
+docker-compose logs -f
+
+# Specific service
+docker-compose logs -f backend
+docker-compose logs -f frontend
+```
+
+### Check Status
+
+```bash
+docker-compose ps
+```
+
+## 🔒 Security Considerations
+
+### Production Checklist
+
+- [ ] Change `SECRET_KEY` in `.env`
+- [ ] Configure proper `CORS_ORIGINS`
+- [ ] Set `APP_DEBUG=false`
+- [ ] Use strong passwords
+- [ ] Enable HTTPS in production (nginx SSL configuration)
+- [ ] Regular security updates of base images
+- [ ] Monitor logs for security events
+
+### SSL/HTTPS Configuration (Optional)
+
+For HTTPS in production, modify `frontend/nginx.conf`:
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name yourdomain.com;
+
+    ssl_certificate /etc/ssl/certs/your-cert.pem;
+    ssl_certificate_key /etc/ssl/private/your-key.pem;
+
+    # ... rest of configuration
+}
+```
+
+## 🗄️ Database Management
+
+### SQLite Database Location
+
+- **Development**: `./backend/data/audit.db`
+- **Production**: Mounted volume in container
+
+### Backup Database
+
+```bash
+# Copy from running container
+docker cp sms-audit-backend-prod:/app/data/audit.db ./backup/audit-$(date +%Y%m%d).db
+```
+
+### Reset Database
+
+```bash
+# Stop services
+docker-compose down
+
+# Remove database volume
+docker volume rm sms-audit_backend-data
+
+# Restart services (will recreate database)
 docker-compose up -d
 ```
 
-**Access:**
-- Frontend: http://localhost:3000
-- Backend: http://localhost:8888
-- API Docs: http://localhost:8888/docs
+## 🐛 Troubleshooting
+
+### Common Issues
+
+1. **Port conflicts**
+   ```bash
+   # Check what's using ports
+   netstat -tulpn | grep :8888
+   netstat -tulpn | grep :80
+
+   # Change ports in docker-compose files
+   ```
+
+2. **Permission issues**
+   ```bash
+   # Fix file permissions
+   sudo chown -R $USER:$USER .
+   ```
+
+3. **Database issues**
+   ```bash
+   # Check database file
+   ls -la backend/data/
+
+   # Reinitialize database
+   docker-compose exec backend python scripts/init_db.py
+   ```
+
+4. **Build failures**
+   ```bash
+   # Clear Docker cache
+   docker system prune -a
+
+   # Rebuild without cache
+   docker-compose build --no-cache
+   ```
+
+### Logs and Debugging
+
+```bash
+# View all logs
+docker-compose logs -f
+
+# View specific service logs
+docker-compose logs -f backend
+
+# Check container status
+docker-compose ps
+
+# Access container shell
+docker-compose exec backend bash
+docker-compose exec frontend sh
+```
+
+## 📈 Performance Optimization
+
+### Resource Limits
+
+Production containers have resource limits configured:
+- **Backend**: 1 CPU, 512MB RAM
+- **Frontend**: 0.5 CPU, 256MB RAM
+
+### Scaling (Future)
+
+For high-traffic deployments, consider:
+- Load balancer (nginx, traefik)
+- Redis for session storage
+- PostgreSQL instead of SQLite
+- Container orchestration (Kubernetes, Docker Swarm)
+
+## 🔄 Updates and Maintenance
+
+### Update Application
+
+```bash
+# Pull latest changes
+git pull origin main
+
+# Rebuild and restart
+docker-compose -f docker-compose.prod.yml up -d --build
+```
+
+### Update Dependencies
+
+```bash
+# Backend
+cd backend
+pip install --upgrade -r requirements.txt
+
+# Frontend
+cd frontend
+npm update
+
+# Rebuild containers
+docker-compose build --no-cache
+```
+
+## 📞 Support
+
+For issues or questions:
+1. Check logs: `docker-compose logs -f`
+2. Verify configuration in `.env`
+3. Ensure all prerequisites are met
+4. Check Docker and Docker Compose versions
+
+---
+
+**Version**: 2.1.0
+**Last Updated**: November 2025
 
 **Stop:**
 ```bash
