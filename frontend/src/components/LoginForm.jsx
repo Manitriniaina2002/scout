@@ -42,7 +42,7 @@ const LoginForm = () => {
           onChange={(e) => setUsername(e.target.value)}
           required
           placeholder="Entrez votre nom d'utilisateur"
-          className="w-full placeholder-gray-500"
+          className="w-full sm:w-80 lg:w-80 placeholder-gray-500"
         />
       </div>
       <div className="space-y-2">
@@ -55,7 +55,7 @@ const LoginForm = () => {
             onChange={(e) => setPassword(e.target.value)}
             required
             placeholder="Entrez votre mot de passe"
-            className="w-full pr-10 placeholder-gray-500"
+            className="w-full sm:w-80 lg:w-80 pr-10 placeholder-gray-500"
           />
           <button
             type="button"
